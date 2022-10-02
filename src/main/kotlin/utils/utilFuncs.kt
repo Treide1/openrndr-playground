@@ -116,7 +116,6 @@ fun <T> List<T>.circularSublist(from: Int, to: Int): List<T> {
 
 }
 
-
 fun Drawer.showCoordinateSystem(scl: Double) {
 
     val axis = Rectangle(-scl, 0.0, scl*2, 1.0)
@@ -128,4 +127,8 @@ fun Drawer.showCoordinateSystem(scl: Double) {
         this.rectangle(axis)
     }
 
+}
+
+fun Double.sqrt(): Double {
+    return if (this < 0.0 ) Double.NaN else kotlin.math.sqrt(this)
 }
