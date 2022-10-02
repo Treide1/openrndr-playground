@@ -7,8 +7,12 @@ import org.openrndr.extra.color.presets.DARK_RED
 import org.openrndr.extra.color.presets.LIGHT_GREEN
 import org.openrndr.math.Polar
 import org.openrndr.math.Vector2
+import org.openrndr.math.map
+import org.openrndr.shape.contour
 import utils.toDegrees
-import kotlin.math.*
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sqrt
 
 /**
  * Procedural bloom of petals.
@@ -39,6 +43,9 @@ fun main() = application {
         fun spacingFac() = 60.0
         fun contentSize() = 100.0
 
+        fun symmetryNum() = 5
+        fun petalPoints() = 40
+
         // Fibonacci Spiral
 
         val phi = (1 + sqrt(5.0)) / 2.0
@@ -50,28 +57,54 @@ fun main() = application {
         }
 
         extend {
-            drawer.translate(width/2.0, height/2.0)
-            drawer.stroke = ColorRGBa.LIGHT_GREEN
-            drawer.fill = ColorRGBa.BLACK
 
             petalPolars.forEachIndexed { index, polar ->
                 drawer.isolated {
+                    fill = ColorRGBa.BLACK
+                    stroke = ColorRGBa.LIGHT_GREEN.mix( ColorRGBa.DARK_RED, index.toDouble()/petalPolars.size)
 
-                    stroke = stroke!!.mix( ColorRGBa.DARK_RED, index.toDouble()/petalPolars.size)
+                    translate(width/2.0, height/2.0)
+
                     rotate(polar.theta)
                     val x = 0.0
                     val y = polar.radius
+                    translate(x,y)
+
                     val cs = contentSize()
                     val off = Vector2(-cs/2.0, 0.0) // content offset
-                    rectangle(x+off.x, y+off.y, cs)
-
-
-                    fill = ColorRGBa.RED
-                    stroke = ColorRGBa.RED
-                    circle(x, y, 2.0)
+                    rectangle(off.x, off.y, cs)
                 }
             }
 
         }
+
+        // Rose Curve Petal
+
+        val petalContour = contour {
+            val n = symmetryNum()
+            val a = contentSize()
+            val p = petalPoints()
+            val arc = PI/n // angular dist for each petal
+
+            (0..p).forEach { i ->
+                val theta = i.toDouble().map(0.0, p.toDouble(), -arc*.5, arc*.5)
+                val r = a * cos(n*theta)
+
+                val v = Polar(theta.toDegrees(), r).cartesian
+                moveOrLineTo(v)
+            }
+            close()
+        }
+
+        extend {
+            val cs = contentSize()
+
+            drawer.translate(cs, cs)
+            drawer.stroke = ColorRGBa.BLACK
+            drawer.fill = ColorRGBa.PINK
+
+            drawer.contour(petalContour)
+        }
+
     }
 }
