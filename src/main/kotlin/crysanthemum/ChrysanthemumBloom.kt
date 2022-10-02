@@ -3,7 +3,10 @@ package crysanthemum
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.isolated
+import org.openrndr.extra.color.presets.DARK_RED
+import org.openrndr.extra.color.presets.LIGHT_GREEN
 import org.openrndr.math.Polar
+import org.openrndr.math.Vector2
 import utils.toDegrees
 import kotlin.math.*
 
@@ -48,18 +51,19 @@ fun main() = application {
 
         extend {
             drawer.translate(width/2.0, height/2.0)
-            drawer.stroke = ColorRGBa.GREEN
+            drawer.stroke = ColorRGBa.LIGHT_GREEN
             drawer.fill = ColorRGBa.BLACK
 
             petalPolars.forEachIndexed { index, polar ->
                 drawer.isolated {
 
-                    stroke = stroke!!.mix( ColorRGBa.RED, index.toDouble()/petalPolars.size)
+                    stroke = stroke!!.mix( ColorRGBa.DARK_RED, index.toDouble()/petalPolars.size)
                     rotate(polar.theta)
                     val x = 0.0
                     val y = polar.radius
                     val cs = contentSize()
-                    rectangle(x-cs*.5, y, cs)
+                    val off = Vector2(-cs/2.0, 0.0) // content offset
+                    rectangle(x+off.x, y+off.y, cs)
 
 
                     fill = ColorRGBa.RED
