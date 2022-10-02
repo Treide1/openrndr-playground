@@ -1,9 +1,9 @@
+package crysanthemum
+
 import org.openrndr.KEY_SPACEBAR
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.isolated
-import org.openrndr.draw.loadFont
-import org.openrndr.draw.loadImage
 import org.openrndr.math.Polar
 import org.openrndr.math.map
 import utils.circularSublist
