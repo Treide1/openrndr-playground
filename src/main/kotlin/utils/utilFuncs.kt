@@ -1,5 +1,8 @@
 package utils
 
+import org.openrndr.color.ColorRGBa
+import org.openrndr.draw.Drawer
+import org.openrndr.draw.isolated
 import org.openrndr.math.map
 import org.openrndr.shape.Rectangle
 import kotlin.math.PI
@@ -110,5 +113,19 @@ fun <T> List<T>.circularSublist(from: Int, to: Int): List<T> {
     // Recursion stops for returning the canonical sublist.
     val fall = a - (a%total)
     return subList(a - fall, b - fall)
+
+}
+
+
+fun Drawer.showCoordinateSystem(scl: Double) {
+
+    val axis = Rectangle(-scl, 0.0, scl*2, 1.0)
+    this.isolated {
+        stroke = ColorRGBa.RED
+        this.rectangle(axis)
+        this.rotate(90.0)
+        stroke = ColorRGBa.BLUE
+        this.rectangle(axis)
+    }
 
 }
