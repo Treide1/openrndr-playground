@@ -9,6 +9,7 @@ import org.openrndr.math.Polar
 import org.openrndr.math.Vector2
 import org.openrndr.math.map
 import org.openrndr.shape.contour
+import utils.showCoordinateSystem
 import utils.toDegrees
 import kotlin.math.PI
 import kotlin.math.cos
@@ -73,6 +74,9 @@ fun main() = application {
                     val cs = contentSize()
                     val off = Vector2(-cs/2.0, 0.0) // content offset
                     rectangle(off.x, off.y, cs)
+
+
+                    showCoordinateSystem(20.0)
                 }
             }
 
