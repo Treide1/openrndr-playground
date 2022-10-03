@@ -19,7 +19,6 @@ import utils.toDegrees
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sqrt
-import kotlin.system.exitProcess
 
 /**
  * Procedural bloom of petals.
@@ -158,7 +157,7 @@ fun main() = application {
                 petalAnimatables += PetalAnim()
                 time = 0.0
             }
-            if (it.key == KEY_ESCAPE) exitProcess(0)
+            if (it.key == KEY_ESCAPE) program.application.exit()
         }
 
     }
