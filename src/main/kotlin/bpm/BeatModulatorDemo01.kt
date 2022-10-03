@@ -9,7 +9,16 @@ import org.openrndr.math.map
 
 /**
  * Showcasing BPM support with the BeatModulator class.
- * We sample two Oscillator envelopes and blend them together.
+ * We sample two Oscillator envelopes and modulate them together.
+ * Transitions on hitting SPACEBAR.
+ *
+ * Author: Lukas Henke, 03.10.2022
+ *
+ * Controls:
+ * SPACEBAR - Change target modulation (via transition)
+ * "c" - Cancel all transitions. Modulation doesn't change anymore.
+ * "s" - Sync the BeatEnvelopes to the moment of key press
+ * "p" - Pause the enitre program
  */
 fun main() = application {
     configure {
@@ -31,6 +40,8 @@ fun main() = application {
         val rad = 10.0
         val leftColor = ColorRGBa.GREEN
         val rightColor = ColorRGBa.RED
+
+        val transitionEasing = Easing.CubicOut
 
         // Creating BeatModulator and adding it to clock
         val beatModulator = BeatModulator()
@@ -91,8 +102,9 @@ fun main() = application {
                 targetWeights[1] = tmp0
 
                 // After all transitions, do one more swap
-                beatModulator.pushTransition(targetWeights, 2.0, Easing.None)
+                beatModulator.pushTransition(targetWeights, 2.0, transitionEasing)
             }
+            if (it.name == "c") beatModulator.cancelAllTransitions()
             if (it.name == "s") beatModulator.syncAll(null, 0.0)
             if (it.name == "p") clock.toggle(beatModulator)
         }
