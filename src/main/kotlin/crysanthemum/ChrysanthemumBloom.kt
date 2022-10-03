@@ -8,6 +8,7 @@ import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.isolated
 import org.openrndr.extra.color.presets.DEEP_PINK
+import org.openrndr.extra.shadestyles.linearGradient
 import org.openrndr.math.Polar
 import org.openrndr.math.Vector2
 import org.openrndr.math.map
@@ -52,7 +53,8 @@ fun main() = application {
         fun petalPoints() = 40
         fun petalScl() = Vector2(5.0, 2.5)
 
-        fun emissionRate() = (1000L / (125.0 / 60)).toLong() // emit a petal at this rate in ms
+        fun bpm() = 125.0
+        fun emissionRate() = (1000L / (bpm() / 60)).toLong() // emit a petal at this rate in ms
         fun emissionLifetime() = 12000L // lifetime of each petal in ms
         fun maxPetals() = emissionLifetime() / emissionRate()
         fun startRad() = 20.0
@@ -83,11 +85,9 @@ fun main() = application {
 
             init {
                 ::relTime.animate(1.0, lt)
-                ::brg.animate(1.0, er, Easing.CubicIn)
+                ::brg.animate(1.0, er/2, Easing.CubicIn)
                 ::brg.complete()
-                ::brg.animate(1.0, lt - 4*er)
-                ::brg.complete()
-                ::brg.animate(0.0, 3*er, Easing.SineInOut)
+                ::brg.animate(0.0, lt - er/2, Easing.SineInOut)
             }
         }
         val petalAnimatables = mutableListOf<PetalAnim>()
@@ -130,8 +130,12 @@ fun main() = application {
             petalAnimatables.forEach { anim ->
                 anim.updateAnimation()
                 drawer.isolated {
+                    val offset = Vector2(-.05, .0)
                     stroke = ColorRGBa.BLACK.opacify(anim.brg)
-                    fill = ColorRGBa.DEEP_PINK.opacify(anim.brg)
+                    shadeStyle = linearGradient(
+                        ColorRGBa.DEEP_PINK.opacify(anim.brg),
+                        ColorRGBa.BLACK.opacify(anim.brg),
+                        offset, 45.0)
 
                     translate(width/2.0, height/2.0)
 
