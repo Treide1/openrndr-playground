@@ -24,7 +24,6 @@ class Weight(private var w: Double = 0.0){
     ) {
         val _start = start ?: if (hasTransitions()) transitions.last().run { b + c } else w
         transitions += Transition(_start, end - _start, duration, easing)
-        println("start: $_start, end: $end, duration: $duration")
     }
 
     var t = 0.0 // time, relative to first transition in queue
