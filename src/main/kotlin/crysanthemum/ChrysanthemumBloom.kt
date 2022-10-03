@@ -26,16 +26,20 @@ import kotlin.system.exitProcess
  *
  * Starts with no visible petals. Petals fade in, moving from center to boundary.
  * Each new petal is offset by fixed angle.
- * Shading is based on this angle with angle offset.
+ * Shading is based relative angle.
  *
  * Petals fade out approaching the boundary. Central petals overlap outer petals.
- * Movement is "punchy" with circular easing abruptly stopping in fixed intervals.
+ * Movement is "punchy" with cubic easing abruptly stopping in fixed intervals.
  *
  * Author: Lukas Henke, 02.10.2022
  *
  * Sources:
  * http://nightmare.com/rushing/misc/fibonacci/ -> Fibonacci Spiral
  * https://socratic.org/precalculus/polar-coordinates/rose-curves -> Rose Curve
+ *
+ * Controls:
+ * KEY_SPACEBAR - Reset timing on bpm
+ * KEY_ESCAPE - Close program
  */
 fun main() = application {
     configure {
