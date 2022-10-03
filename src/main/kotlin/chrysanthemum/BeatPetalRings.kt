@@ -1,6 +1,15 @@
 package chrysanthemum
 
 import org.openrndr.application
+import org.openrndr.color.ColorRGBa
+import org.openrndr.draw.isolated
+import org.openrndr.math.Polar
+import org.openrndr.math.Vector2
+import org.openrndr.math.map
+import org.openrndr.shape.contour
+import utils.toDegrees
+import kotlin.math.PI
+import kotlin.math.cos
 
 /**
  * BeatEnvelope driven rings of flower petals.
@@ -24,7 +33,58 @@ fun main() = application {
         title = "Beat Petal Rings"
     }
     program {
+
+        // Config
+        fun contentSize() = 100.0
+
+        fun symmetryNum() = 5
+        fun petalPoints() = 40
+        fun petalScl() = Vector2(2.5, 5.0)
+
+        fun bpm() = 125.0 // Song: "Understatement" by "Solid Stone"
+        fun startRad() = 20.0
+        fun endRad() = 150.0
+
+        //ROSE CURVE PETAL
+
+        val petalContour = contour {
+            // Aliases for easy reading
+            val n = symmetryNum()
+            val a = contentSize()
+            val p = petalPoints()
+            val arc = PI /n // angular width for each petal
+
+            // Mapping index to contour point
+            (0..p).forEach { i ->
+                val theta = i.toDouble().map(0.0, p.toDouble(), -arc*.5, arc*.5)
+                val r = a * cos(n*theta)
+
+                val scl = petalScl()
+                val v = Polar(theta.toDegrees(), r).cartesian.times(scl)
+                moveOrLineTo(v)
+            }
+            close()
+        }
+
         extend {
+            val petalsPerRing = listOf(8)
+
+            petalsPerRing.forEachIndexed { i, petalAmount ->
+                (0 until petalAmount).forEach {j ->
+                    drawer.isolated {
+                        translate(width/2.0, height/2.0)
+
+                        val theta = j*360.0/petalAmount
+                        val rad = if (j%2 == 0) startRad() else endRad()
+                        rotate(theta)
+                        translate(rad, 0.0)
+
+                        stroke = ColorRGBa.BLACK
+                        fill = ColorRGBa.PINK
+                        contour(petalContour)
+                    }
+                }
+            }
 
         }
     }
