@@ -9,6 +9,7 @@ import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.isolated
 import org.openrndr.extra.color.presets.DEEP_PINK
 import org.openrndr.extra.shadestyles.linearGradient
+import org.openrndr.ffmpeg.ScreenRecorder
 import org.openrndr.math.Polar
 import org.openrndr.math.Vector2
 import org.openrndr.math.map
@@ -48,6 +49,13 @@ fun main() = application {
     }
 
     program {
+
+        // Add video recording
+        val screenRecorder = ScreenRecorder().apply {
+            outputToVideo = false
+            name = "../src/main/kotlin/crysanthemum/ChrysanthemumBloom"
+        }
+        program.extend(screenRecorder)
 
         // Config
         fun contentSize() = 100.0
@@ -156,6 +164,10 @@ fun main() = application {
             if (it.key == KEY_SPACEBAR) {
                 petalAnimatables += PetalAnim()
                 time = 0.0
+            }
+            if (it.name == "v") {
+                screenRecorder.outputToVideo = !screenRecorder.outputToVideo
+                println("ScreenRecorder: ${if (screenRecorder.outputToVideo) "ON" else "OFF"}")
             }
             if (it.key == KEY_ESCAPE) program.application.exit()
         }
