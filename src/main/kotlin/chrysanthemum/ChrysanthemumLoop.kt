@@ -1,4 +1,4 @@
-package crysanthemum
+package chrysanthemum
 
 import org.openrndr.KEY_SPACEBAR
 import org.openrndr.application

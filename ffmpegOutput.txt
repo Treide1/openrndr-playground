@@ -17,7 +17,7 @@ Stream mapping:
 [libx264 @ 0000018d42469f80] using cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2
 [libx264 @ 0000018d42469f80] profile High, level 3.2, 4:2:0, 8-bit
 [libx264 @ 0000018d42469f80] 264 - core 164 r3100 ed0f7a6 - H.264/MPEG-4 AVC codec - Copyleft 2003-2022 - http://www.videolan.org/x264.html - options: cabac=1 ref=3 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=7 psy=1 psy_rd=1.00:0.00 mixed_ref=1 me_range=16 chroma_me=1 trellis=1 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=-2 threads=24 lookahead_threads=4 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=3 b_pyramid=2 b_adapt=1 b_bias=0 direct=1 weightb=1 open_gop=0 weightp=2 keyint=250 keyint_min=25 scenecut=40 intra_refresh=0 rc_lookahead=40 rc=crf mbtree=1 crf=23.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
-Output #0, mp4, to 'video/../src/main/kotlin/crysanthemum/ChrysanthemumBloom-2022-10-03-16.52.57.mp4':
+Output #0, mp4, to 'video/../src/main/kotlin/chrysanthemum/ChrysanthemumBloom-2022-10-03-16.52.57.mp4':
   Metadata:
     encoder         : Lavf59.33.100
   Stream #0:0: Video: h264 (avc1 / 0x31637661), yuv420p(tv, bt709, progressive), 1000x1000, q=2-31, 30 fps, 15360 tbn
@@ -25,8 +25,26 @@ Output #0, mp4, to 'video/../src/main/kotlin/crysanthemum/ChrysanthemumBloom-202
       encoder         : Lavc59.49.100 libx264
     Side data:
       cpb: bitrate max/min/avg: 0/0/0 buffer size: 0 vbv_delay: N/A
-frame=    0 fps=0.0 q=0.0 size=       0kB time=-577014:32:22.77 bitrate=  -0.0kbits/s speed=N/A    [rawvideo @ 0000018d4243eb80] Thread message queue blocking; consider raising the thread_queue_size option (current value: 1)
-frame=    0 fps=0.0 q=0.0 size=       0kB time=-577014:32:22.77 bitrate=  -0.0kbits/s speed=N/A    frame=    0 fps=0.0 q=0.0 size=       0kB time=-577014:32:22.77 bitrate=  -0.0kbits/s speed=N/A    frame=   32 fps= 21 q=29.0 size=       0kB time=00:00:01.00 bitrate=   0.4kbits/s speed=0.657x    frame=   65 fps= 32 q=29.0 size=       0kB time=00:00:02.10 bitrate=   0.2kbits/s speed=1.03x    frame=   98 fps= 39 q=29.0 size=       0kB time=00:00:03.20 bitrate=   0.1kbits/s speed=1.26x    frame=  133 fps= 44 q=29.0 size=       0kB time=00:00:04.36 bitrate=   0.1kbits/s speed=1.43x    frame=  166 fps= 47 q=29.0 size=       0kB time=00:00:05.46 bitrate=   0.1kbits/s speed=1.53x    frame=  198 fps= 49 q=29.0 size=       0kB time=00:00:06.53 bitrate=   0.1kbits/s speed= 1.6x    frame=  234 fps= 51 q=29.0 size=     256kB time=00:00:07.73 bitrate= 271.2kbits/s speed=1.69x    frame=  268 fps= 53 q=29.0 size=     256kB time=00:00:08.86 bitrate= 236.6kbits/s speed=1.74x    frame=  302 fps= 54 q=29.0 size=     256kB time=00:00:10.00 bitrate= 209.8kbits/s speed=1.78x    frame=  336 fps= 55 q=29.0 size=     256kB time=00:00:11.13 bitrate= 188.4kbits/s speed=1.82x    frame=  369 fps= 56 q=29.0 size=     256kB time=00:00:12.23 bitrate= 171.5kbits/s speed=1.85x    frame=  403 fps= 56 q=29.0 size=     512kB time=00:00:13.36 bitrate= 313.8kbits/s speed=1.87x    frame=  434 fps= 57 q=29.0 size=     512kB time=00:00:14.36 bitrate= 292.0kbits/s speed=1.88x    frame=  434 fps= 53 q=29.0 size=     512kB time=00:00:14.36 bitrate= 292.0kbits/s speed=1.76x    frame=  434 fps= 50 q=29.0 size=     512kB time=00:00:14.36 bitrate= 292.0kbits/s speed=1.66x    frame=  503 fps= 55 q=-1.0 Lsize=     651kB time=00:00:16.66 bitrate= 319.8kbits/s speed=1.83x    
+frame=    0 fps=0.0 q=0.0 size=       0kB time=-577014:32:22.77 bitrate=  -0.0kbits/s speed=N/A    
+[rawvideo @ 0000018d4243eb80] Thread message queue blocking; consider raising the thread_queue_size option (current value: 1)
+frame=    0 fps=0.0 q=0.0 size=       0kB time=-577014:32:22.77 bitrate=  -0.0kbits/s speed=N/A    
+frame=    0 fps=0.0 q=0.0 size=       0kB time=-577014:32:22.77 bitrate=  -0.0kbits/s speed=N/A    
+frame=   32 fps= 21 q=29.0 size=       0kB time=00:00:01.00 bitrate=   0.4kbits/s speed=0.657x    
+frame=   65 fps= 32 q=29.0 size=       0kB time=00:00:02.10 bitrate=   0.2kbits/s speed=1.03x    
+frame=   98 fps= 39 q=29.0 size=       0kB time=00:00:03.20 bitrate=   0.1kbits/s speed=1.26x    
+frame=  133 fps= 44 q=29.0 size=       0kB time=00:00:04.36 bitrate=   0.1kbits/s speed=1.43x    
+frame=  166 fps= 47 q=29.0 size=       0kB time=00:00:05.46 bitrate=   0.1kbits/s speed=1.53x    
+frame=  198 fps= 49 q=29.0 size=       0kB time=00:00:06.53 bitrate=   0.1kbits/s speed= 1.6x    
+frame=  234 fps= 51 q=29.0 size=     256kB time=00:00:07.73 bitrate= 271.2kbits/s speed=1.69x    
+frame=  268 fps= 53 q=29.0 size=     256kB time=00:00:08.86 bitrate= 236.6kbits/s speed=1.74x    
+frame=  302 fps= 54 q=29.0 size=     256kB time=00:00:10.00 bitrate= 209.8kbits/s speed=1.78x    
+frame=  336 fps= 55 q=29.0 size=     256kB time=00:00:11.13 bitrate= 188.4kbits/s speed=1.82x    
+frame=  369 fps= 56 q=29.0 size=     256kB time=00:00:12.23 bitrate= 171.5kbits/s speed=1.85x    
+frame=  403 fps= 56 q=29.0 size=     512kB time=00:00:13.36 bitrate= 313.8kbits/s speed=1.87x    
+frame=  434 fps= 57 q=29.0 size=     512kB time=00:00:14.36 bitrate= 292.0kbits/s speed=1.88x    
+frame=  434 fps= 53 q=29.0 size=     512kB time=00:00:14.36 bitrate= 292.0kbits/s speed=1.76x    
+frame=  434 fps= 50 q=29.0 size=     512kB time=00:00:14.36 bitrate= 292.0kbits/s speed=1.66x    
+frame=  503 fps= 55 q=-1.0 Lsize=     651kB time=00:00:16.66 bitrate= 319.8kbits/s speed=1.83x    
 video:644kB audio:0kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: 1.048200%
 [libx264 @ 0000018d42469f80] frame I:3     Avg QP:16.47  size: 15462
 [libx264 @ 0000018d42469f80] frame P:127   Avg QP:19.80  size:  3305

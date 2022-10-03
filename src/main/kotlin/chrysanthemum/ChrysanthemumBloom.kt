@@ -1,4 +1,4 @@
-package crysanthemum
+package chrysanthemum
 
 import org.openrndr.KEY_ESCAPE
 import org.openrndr.KEY_SPACEBAR
@@ -54,7 +54,7 @@ fun main() = application {
         // Video Recording
         val screenRecorder = ScreenRecorder().apply {
             outputToVideo = false
-            name = "../src/main/kotlin/crysanthemum/ChrysanthemumBloom"
+            name = "../src/main/kotlin/chrysanthemum/ChrysanthemumBloom"
         }
         program.extend(screenRecorder)
 
