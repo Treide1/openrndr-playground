@@ -29,7 +29,7 @@ class BeatModulator : ClockSubscriber {
     operator fun set(i: Int, beatEnvelope: BeatEnvelope?) {
         if (i < 0 || i >= MAX_ENVELOPES) throw IllegalArgumentException("Index $i not allowed.")
         envelopes[i] = beatEnvelope
-        weights[i].w = 0.0
+        weights[i].reset()
     }
 
     override fun tick(seconds: Double, deltaTime: Double, frameCount: Int) {
@@ -75,7 +75,7 @@ class BeatModulator : ClockSubscriber {
     fun pushTransition(target: HashMap<Int, Double>, duration: Double, easing: Easing = Easing.None) {
         for (i in 0..MAX_ENVELOPES) {
             if (target.containsKey(i)) {
-                weights[i].pushTransition(weights[i].w, target[i]!!, duration, easing)
+                weights[i].pushTransition(null, target[i]!!, duration, easing)
             }
         }
     }
