@@ -1,20 +1,24 @@
 package crysanthemum
 
+import org.openrndr.KEY_ESCAPE
+import org.openrndr.KEY_SPACEBAR
 import org.openrndr.animatable.Animatable
+import org.openrndr.animatable.easing.Easing
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.isolated
+import org.openrndr.extra.color.presets.DEEP_PINK
 import org.openrndr.math.Polar
 import org.openrndr.math.Vector2
 import org.openrndr.math.map
 import org.openrndr.shape.contour
 import utils.PHI
-import utils.showCoordinateSystem
 import utils.sqrt
 import utils.toDegrees
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sqrt
+import kotlin.system.exitProcess
 
 /**
  * Procedural bloom of petals.
@@ -46,12 +50,13 @@ fun main() = application {
 
         fun symmetryNum() = 5
         fun petalPoints() = 40
+        fun petalScl() = Vector2(5.0, 2.5)
 
-        fun emissionRate() = 800L // emit a petal at this rate in ms
+        fun emissionRate() = (1000L / (125.0 / 60)).toLong() // emit a petal at this rate in ms
         fun emissionLifetime() = 12000L // lifetime of each petal in ms
         fun maxPetals() = emissionLifetime() / emissionRate()
-        fun startRad() = 50.0
-        fun endRad() = 250.0
+        fun startRad() = 20.0
+        fun endRad() = 150.0
 
         // Fibonacci Spiral Emission
 
@@ -61,6 +66,7 @@ fun main() = application {
             // Constant
             val theta = 2*PI/(PHI * PHI) * petalsEmitted++
             val deg = theta.toDegrees()
+            val er = emissionRate()
             val lt = emissionLifetime()
 
             // Relative
@@ -77,11 +83,11 @@ fun main() = application {
 
             init {
                 ::relTime.animate(1.0, lt)
-                ::brg.animate(1.0, lt.times(.1).toLong())
+                ::brg.animate(1.0, er, Easing.CubicIn)
                 ::brg.complete()
-                ::brg.animate(1.0, lt.times(.8).toLong())
+                ::brg.animate(1.0, lt - 4*er)
                 ::brg.complete()
-                ::brg.animate(0.0, lt.times(.1).toLong())
+                ::brg.animate(0.0, 3*er, Easing.SineInOut)
             }
         }
         val petalAnimatables = mutableListOf<PetalAnim>()
@@ -100,13 +106,15 @@ fun main() = application {
                 val theta = i.toDouble().map(0.0, p.toDouble(), -arc*.5, arc*.5)
                 val r = a * cos(n*theta)
 
-                val v = Polar(theta.toDegrees(), r).cartesian
+                val scl = petalScl()
+                val v = Polar(theta.toDegrees(), r).cartesian.rotate(90.0)
+                    .map(Vector2.ZERO, Vector2.ONE, Vector2.ZERO, scl)
                 moveOrLineTo(v)
             }
             close()
         }
 
-        // Draw Debug Rects and Coords
+        // Draw Petals
 
         extend {
             time += deltaTime
@@ -123,7 +131,7 @@ fun main() = application {
                 anim.updateAnimation()
                 drawer.isolated {
                     stroke = ColorRGBa.BLACK.opacify(anim.brg)
-                    fill = ColorRGBa.WHITE.opacify(anim.brg)
+                    fill = ColorRGBa.DEEP_PINK.opacify(anim.brg)
 
                     translate(width/2.0, height/2.0)
 
@@ -132,25 +140,17 @@ fun main() = application {
                     val y = anim.radius
                     translate(x,y)
 
-                    val cs = contentSize()
-                    val off = Vector2(-cs/2.0, 0.0) // content offset
-                    rectangle(off.x, off.y, cs)
-
-                    showCoordinateSystem(20.0)
+                    contour(petalContour)
                 }
             }
         }
 
-        // Draw Debug Petal
-
-        extend {
-            val cs = contentSize()
-
-            drawer.translate(cs, cs)
-            drawer.stroke = ColorRGBa.BLACK
-            drawer.fill = ColorRGBa.PINK
-
-            drawer.contour(petalContour)
+        keyboard.keyDown.listen {
+            if (it.key == KEY_SPACEBAR) {
+                petalAnimatables += PetalAnim()
+                time = 0.0
+            }
+            if (it.key == KEY_ESCAPE) exitProcess(0)
         }
 
     }
