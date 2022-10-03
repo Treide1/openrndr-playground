@@ -88,6 +88,26 @@ fun main() = application {
 
         var time = 0.0
 
+        // Rose Curve Petal
+
+        val petalContour = contour {
+            val n = symmetryNum()
+            val a = contentSize()
+            val p = petalPoints()
+            val arc = PI/n // angular width for each petal
+
+            (0..p).forEach { i ->
+                val theta = i.toDouble().map(0.0, p.toDouble(), -arc*.5, arc*.5)
+                val r = a * cos(n*theta)
+
+                val v = Polar(theta.toDegrees(), r).cartesian
+                moveOrLineTo(v)
+            }
+            close()
+        }
+
+        // Draw Debug Rects and Coords
+
         extend {
             time += deltaTime
             val erDouble = emissionRate() / 1000.0
@@ -121,23 +141,7 @@ fun main() = application {
             }
         }
 
-        // Rose Curve Petal
-
-        val petalContour = contour {
-            val n = symmetryNum()
-            val a = contentSize()
-            val p = petalPoints()
-            val arc = PI/n // angular width for each petal
-
-            (0..p).forEach { i ->
-                val theta = i.toDouble().map(0.0, p.toDouble(), -arc*.5, arc*.5)
-                val r = a * cos(n*theta)
-
-                val v = Polar(theta.toDegrees(), r).cartesian
-                moveOrLineTo(v)
-            }
-            close()
-        }
+        // Draw Debug Petal
 
         extend {
             val cs = contentSize()
