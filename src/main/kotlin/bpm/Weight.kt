@@ -10,20 +10,21 @@ class Weight(private var w: Double = 0.0){
 
     /**
      * Push a transition to the queue.
-     * This weight will transition from [b] to [c] over duration [d] (with optional easing [easing]).
-     * @param b starting value (or null to infer seamless value)
-     * @param c end value
-     * @param d duration of transition in seconds
+     * This weight will transition from [start] to [end] over [duration] (with optional [easing]).
+     * @param start starting value (or null to infer seamless value)
+     * @param end end value
+     * @param duration duration of transition in seconds
      * @param easing from [Easing] enum, default on None (linear)
      */
     fun pushTransition(
-        b: Double? = null, // start value, null to infer seamless value
-        c: Double, // end value
-        d: Double, // duration
+        start: Double? = null, // start value, null to infer seamless value
+        end: Double, // end value
+        duration: Double, // duration
         easing: Easing = Easing.None // easing function
     ) {
-        val _b = b ?: if (hasTransitions()) transitions.last().c else w
-        transitions += Transition(_b, c, d, easing)
+        val _start = start ?: if (hasTransitions()) transitions.last().run { b + c } else w
+        transitions += Transition(_start, end - _start, duration, easing)
+        println("start: $_start, end: $end, duration: $duration")
     }
 
     var t = 0.0 // time, relative to first transition in queue
@@ -36,21 +37,22 @@ class Weight(private var w: Double = 0.0){
     /**
      * Evaluate this weight. Right now.
      */
-    fun eval() : Double {
-        // Pop transitions that are out of duration
-        while (hasTransitions() && t > transitions.first().d) {
-            val completed = transitions.removeFirst()
-            w = completed.c // Set weight to end value
-            t -= completed.d // Reduce time by duration
-        }
-        // Eval first transition that is not completed
-        if (hasTransitions()) {
-            val uncompleted = transitions.first()
-            w = uncompleted.run { easing.easer.ease(t, b, c, d) }
-        }
+    val value: Double
+        get() {
+            // Pop transitions that are out of duration
+            while (hasTransitions() && t > transitions.first().d) {
+                val completed = transitions.removeFirst()
+                w = completed.run {b + c} // Set weight to end value
+                t -= completed.d // Reduce time by duration
+            }
+            // Eval first transition that is not completed
+            if (hasTransitions()) {
+                val uncompleted = transitions.first()
+                w = uncompleted.run { easing.easer.ease(t, b, c, d) }
+            }
 
-        return w
-    }
+            return w
+        }
 
     /**
      * Clear all transitions and set weight to 0.0.
@@ -64,7 +66,7 @@ class Weight(private var w: Double = 0.0){
      * Cancel all transitions.
      */
     fun cancelTransitions() {
-        w = eval()
+        w = value
         transitions.clear()
     }
 
