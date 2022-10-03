@@ -45,6 +45,10 @@ fun main() = application {
         fun startRad() = 20.0
         fun endRad() = 150.0
 
+        // BEAT ENVELOPE
+
+        val petalsPerRing = listOf(8, 12, 16, 20).reversed()
+
         //ROSE CURVE PETAL
 
         val petalContour = contour {
@@ -67,20 +71,19 @@ fun main() = application {
         }
 
         extend {
-            val petalsPerRing = listOf(8)
-
             petalsPerRing.forEachIndexed { i, petalAmount ->
+                val relI = i.toDouble()/petalsPerRing.size
                 (0 until petalAmount).forEach {j ->
                     drawer.isolated {
                         translate(width/2.0, height/2.0)
 
                         val theta = j*360.0/petalAmount
-                        val rad = if (j%2 == 0) startRad() else endRad()
+                        val rad = relI.map(0.0, 1.0, endRad(), startRad())
                         rotate(theta)
                         translate(rad, 0.0)
 
                         stroke = ColorRGBa.BLACK
-                        fill = ColorRGBa.PINK
+                        fill = ColorRGBa.PINK.shade(relI*.5+.5)
                         contour(petalContour)
                     }
                 }
