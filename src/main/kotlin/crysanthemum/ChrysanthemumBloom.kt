@@ -40,6 +40,7 @@ import kotlin.math.sqrt
  * Controls:
  * KEY_SPACEBAR - Reset timing on bpm
  * KEY_ESCAPE - Close program
+ * v - start/stop video recording
  */
 fun main() = application {
     configure {
@@ -50,7 +51,7 @@ fun main() = application {
 
     program {
 
-        // Add video recording
+        // Video Recording
         val screenRecorder = ScreenRecorder().apply {
             outputToVideo = false
             name = "../src/main/kotlin/crysanthemum/ChrysanthemumBloom"
@@ -71,10 +72,11 @@ fun main() = application {
         fun startRad() = 20.0
         fun endRad() = 150.0
 
-        // Fibonacci Spiral Emission
+        // FIBONACCI SPIRAL EMISSION
 
         var petalsEmitted = 0
 
+        // Base Petal
         class PetalAnim : Animatable() {
             // Constant
             val theta = 2*PI/(PHI * PHI) * petalsEmitted++
@@ -91,6 +93,7 @@ fun main() = application {
             val r1 = startRad()
             val r2 = endRad()
 
+            // Indirectly Animated
             val radius: Double
                 get() = (relTime*mp).sqrt().map(0.0, sMp, r1, r2)
 
@@ -103,16 +106,16 @@ fun main() = application {
         }
         val petalAnimatables = mutableListOf<PetalAnim>()
 
-        var time = 0.0
-
-        // Rose Curve Petal
+        //ROSE CURVE PETAL
 
         val petalContour = contour {
+            // Aliases for easy reading
             val n = symmetryNum()
             val a = contentSize()
             val p = petalPoints()
             val arc = PI/n // angular width for each petal
 
+            // Mapping index to contour point
             (0..p).forEach { i ->
                 val theta = i.toDouble().map(0.0, p.toDouble(), -arc*.5, arc*.5)
                 val r = a * cos(n*theta)
@@ -125,9 +128,12 @@ fun main() = application {
             close()
         }
 
-        // Draw Petals
+        // DRAW PETALS
+
+        var time = 0.0
 
         extend {
+            // Add or remove petals
             time += deltaTime
             val erDouble = emissionRate() / 1000.0
             if (time > erDouble) {
@@ -138,28 +144,28 @@ fun main() = application {
                 petalAnimatables.removeAt(0)
             }
 
+            // Update animatable and draw each petal
             petalAnimatables.forEach { anim ->
                 anim.updateAnimation()
                 drawer.isolated {
-                    val offset = Vector2(-.05, .0)
-                    stroke = ColorRGBa.BLACK.opacify(anim.brg)
+                    stroke = ColorRGBa.BLACK.opacify(anim.brg) // same as 'to' below
                     shadeStyle = linearGradient(
-                        ColorRGBa.DEEP_PINK.opacify(anim.brg),
-                        ColorRGBa.BLACK.opacify(anim.brg),
-                        offset, 45.0)
+                        ColorRGBa.DEEP_PINK.opacify(anim.brg), // color 'from'
+                        ColorRGBa.BLACK.opacify(anim.brg), // color 'to'
+                        Vector2(-.05, .0), // offset relative to unit vector
+                        45.0) // shading angle
 
+                    // Pre-move drawer for fix-position contour
                     translate(width/2.0, height/2.0)
-
                     rotate(anim.deg)
-                    val x = 0.0
-                    val y = anim.radius
-                    translate(x,y)
+                    translate(0.0, anim.radius)
 
                     contour(petalContour)
                 }
             }
         }
 
+        // Keyboard listener
         keyboard.keyDown.listen {
             if (it.key == KEY_SPACEBAR) {
                 petalAnimatables += PetalAnim()
