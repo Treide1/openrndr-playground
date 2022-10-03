@@ -4,6 +4,7 @@ import org.openrndr.KEY_SPACEBAR
 import org.openrndr.application
 import org.openrndr.color.ColorHSVa
 import org.openrndr.math.map
+import utils.lerpBetweenControlPoints
 import kotlin.math.floor
 
 /**
@@ -78,26 +79,4 @@ fun main() = application {
         }
 
     }
-}
-
-/**
- * Calculates the linear interpolation (lerp) of x for the given control points.
- * @param x Input value to be lerped.
- * @param controlPointMap hashMap of control points, where (x,y) being a point means 'map.get(x) = y'.
- * @return Lerp value for x in the "line segment" of the two corresponding control points. Should x be out of range, then 0.0 is returned.
- */
-fun lerpBetweenControlPoints(x: Double, controlPointMap: HashMap<Double, Double>): Double {
-
-    // Partition points based on x value being smaller than x (first) or greater than x (second).
-    // Then find control points just before, and just after x.
-    // 'Just before' means greatest lower bound of x, 'just after' means least upper bound of x.
-    // Returns 0.0, if x is out of range.
-    val partition = controlPointMap.keys.partition { key -> key <= x }
-    if (partition.first.isEmpty() || partition.second.isEmpty()) return 0.0
-
-    val lowerControlX = partition.first.max() // Greatest lower bound of x
-    val lowerControlY = controlPointMap[lowerControlX]!!
-    val upperControlX = partition.second.min() // Least upper bound of x
-    val upperControlY = controlPointMap[upperControlX]!!
-    return x.map(lowerControlX, upperControlX, lowerControlY, upperControlY)
 }

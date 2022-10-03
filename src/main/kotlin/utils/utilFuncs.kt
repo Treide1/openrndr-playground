@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package utils
 
 import org.openrndr.color.ColorRGBa
@@ -9,9 +11,12 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.pow
 
-
-fun getTupleIndex(item: String, map: List<List<String>>): List<Int>? {
-    map.forEachIndexed { i, list ->
+/**
+ * Given a 2-dimensional list [list2D] and a String item [item],
+ * returns the indices i,j as list such that list2D[i, j] = item, or null if not found.
+ */
+fun getTupleIndex(item: String, list2D: List<List<String>>): List<Int>? {
+    list2D.forEachIndexed { i, list ->
         list.forEachIndexed { j, s ->
             if (item == s) return listOf(i, j)
         }
@@ -19,17 +24,22 @@ fun getTupleIndex(item: String, map: List<List<String>>): List<Int>? {
     return null
 }
 
+/**
+ * Split this String into substrings of that length.
+ * Collected in list. Empty string yields empty list.
+ * Last string might be shorter than specified length.
+ */
 fun String.splitByLength(length: Int = 1): List<String> {
-    val chars = this.toCharArray()
-    if (length == 1) return chars.map { c -> c.toString() }
-
-    val buffer = mutableListOf<Char>()
+    var from = 0
+    var to = length
     val result = mutableListOf<String>()
 
-    chars.forEachIndexed { i, c ->
-        buffer.add(c)
-        if (i % length == 0) result.add( buffer.joinToString("") )
+    while (from < this.length) {
+        result += this.substring(from, to.coerceAtMost(this.length))
+        from += length
+        to += length
     }
+
     return result
 }
 
@@ -116,6 +126,10 @@ fun <T> List<T>.circularSublist(from: Int, to: Int): List<T> {
 
 }
 
+/**
+ * Shows a small coordinate system at this drawer's current translation, rotation and scale.
+ * Useful for debugging TRS relations.
+ */
 fun Drawer.showCoordinateSystem(scl: Double) {
 
     val axis = Rectangle(-scl, 0.0, scl*2, 1.0)
@@ -129,6 +143,32 @@ fun Drawer.showCoordinateSystem(scl: Double) {
 
 }
 
+/**
+ * sqrt(x), but as extension function. Allows chain calls.
+ */
 fun Double.sqrt(): Double {
     return if (this < 0.0 ) Double.NaN else kotlin.math.sqrt(this)
+}
+
+
+/**
+ * Calculates the linear interpolation (lerp) of x for the given control points.
+ * @param x Input value to be lerped.
+ * @param controlPointMap hashMap of control points, where (x,y) being a point means 'map.get(x) = y'.
+ * @return Lerp value for x in the "line segment" of the two corresponding control points. Should x be out of range, then 0.0 is returned.
+ */
+fun lerpBetweenControlPoints(x: Double, controlPointMap: HashMap<Double, Double>): Double {
+
+    // Partition points based on x value being smaller than x (first) or greater than x (second).
+    // Then find control points just before, and just after x.
+    // 'Just before' means greatest lower bound of x, 'just after' means least upper bound of x.
+    // Returns 0.0, if x is out of range.
+    val partition = controlPointMap.keys.partition { key -> key <= x }
+    if (partition.first.isEmpty() || partition.second.isEmpty()) return 0.0
+
+    val lowerControlX = partition.first.max() // Greatest lower bound of x
+    val lowerControlY = controlPointMap[lowerControlX]!!
+    val upperControlX = partition.second.min() // Least upper bound of x
+    val upperControlY = controlPointMap[upperControlX]!!
+    return x.map(lowerControlX, upperControlX, lowerControlY, upperControlY)
 }
