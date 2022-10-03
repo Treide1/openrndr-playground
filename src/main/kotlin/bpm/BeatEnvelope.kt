@@ -115,16 +115,18 @@ fun interpolationList(phaseStart: Double = 0.0, phaseEnd: Double = 1.0, size: In
 }
 
 /**
- * Get the result of element-wise list addition.
+ * Get the result of element-wise list addition. [other] being null is ignored.
  */
-infix fun List<Double>.add(other: List<Double>): List<Double> {
+infix fun List<Double>.add(other: List<Double>?): List<Double> {
+    if (other == null) return this
     return this.zip(other) { a, b -> a + b }
 }
 
 /**
- * Get the result of element-wise list multiplication.
+ * Get the result of element-wise list multiplication. [other] being null is ignored.
  */
-infix fun List<Double>.mult(other: List<Double>): List<Double> {
+infix fun List<Double>.mult(other: List<Double>?): List<Double> {
+    if (other == null) return this
     return this.zip(other) { a, b -> a * b }
 }
 
