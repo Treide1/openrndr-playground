@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package bpm
 
 import org.openrndr.math.map
@@ -128,5 +130,27 @@ infix fun List<Double>.add(other: List<Double>?): List<Double> {
 infix fun List<Double>.mult(other: List<Double>?): List<Double> {
     if (other == null) return this
     return this.zip(other) { a, b -> a * b }
+}
+
+/**
+ * Get the result of element-wise list addition. [other] being null is ignored.
+ */
+infix fun MutableList<Double>.addEqual(other: List<Double>?) {
+    if (other == null) return
+    if (this.size != other.size) return
+    this.zip(other) { a, b -> a + b }.forEachIndexed { i, value ->
+        this[i] = value
+    }
+}
+
+/**
+ * Get the result of element-wise list multiplication. [other] being null is ignored.
+ */
+infix fun MutableList<Double>.multEqual(other: List<Double>?) {
+    if (other == null) return
+    if (this.size != other.size) return
+    this.zip(other) { a, b -> a + b }.forEachIndexed { i, value ->
+        this[i] = value
+    }
 }
 
