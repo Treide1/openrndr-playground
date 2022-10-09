@@ -10,6 +10,7 @@ import org.openrndr.shape.Rectangle
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.pow
+import kotlin.math.sign
 
 /**
  * Given a 2-dimensional list [list2D] and a String item [item],
@@ -23,6 +24,7 @@ fun getTupleIndex(item: String, list2D: List<List<String>>): List<Int>? {
     }
     return null
 }
+
 
 /**
  * Split this String into substrings of that length.
@@ -43,6 +45,7 @@ fun String.splitByLength(length: Int = 1): List<String> {
     return result
 }
 
+
 /**
  * Hull curve on [edge0, edge1], rescaled to [0,1]
  * Values are 0 before domain, and 1 after domain.
@@ -58,6 +61,7 @@ fun Double.smoothstep( edge0: Double, edge1: Double): Double {
     }
 }
 
+
 /**
  * Hull curve on [0,1] with 0 elsewhere.
  * Linear segments from (0,0) to (.5, 1) to (1, 0), forming a spike.
@@ -68,9 +72,11 @@ fun hullSpike(t: Double): Double = when {
     else                -> 2.0 - t*2.0
 }
 
+
 fun Double.toDegrees(): Double{
     return this.map(0.0, 2* PI, 0.0, 360.0)
 }
+
 
 /**
  * Get a sublist, where the indices 'from' and 'to' are allowed to be any integer.
@@ -126,6 +132,7 @@ fun <T> List<T>.circularSublist(from: Int, to: Int): List<T> {
 
 }
 
+
 /**
  * Shows a small coordinate system at this drawer's current translation, rotation and scale.
  * Useful for debugging TRS relations.
@@ -142,6 +149,7 @@ fun Drawer.showCoordinateSystem(scl: Double) {
     }
 
 }
+
 
 /**
  * sqrt(x), but as extension function. Allows chain calls.
