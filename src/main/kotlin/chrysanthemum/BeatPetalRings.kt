@@ -1,18 +1,29 @@
 package chrysanthemum
 
+import bpm.BeatEnvelope
+import bpm.BeatEnvelopeBuilder.Companion.buildBySegments
+import bpm.BeatModulator
+import bpm.Clock
+import bpm.addEqual
+import org.openrndr.KEY_SPACEBAR
+import org.openrndr.animatable.easing.Easing
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.isolated
 import org.openrndr.math.Polar
 import org.openrndr.math.Vector2
 import org.openrndr.math.map
+import org.openrndr.math.smoothstep
 import org.openrndr.shape.contour
 import utils.toDegrees
 import kotlin.math.PI
 import kotlin.math.cos
+import kotlin.math.pow
 
 /**
  * BeatEnvelope driven rings of flower petals.
+ * Each ring rotates slowly at different angular velocities.
+ * The distance to center is controlled by BeatEnvelope
  *
  * Switch between different envelopes highlighting beat patterns.
  *
@@ -32,6 +43,7 @@ fun main() = application {
         height = 1000
         title = "Beat Petal Rings"
     }
+
     program {
 
         // Config
@@ -44,10 +56,52 @@ fun main() = application {
         fun bpm() = 125.0 // Song: "Understatement" by "Solid Stone"
         fun startRad() = 20.0
         fun endRad() = 150.0
+        fun beatRadFac() = .15
+
+        fun innerPetalCount() = 8
+        fun outerPetalCount() = 20
+        fun stepPetalCount() = 4
+
+        fun rotationFac() = 0.02
+
+        val petalsPerRing = (innerPetalCount() .. outerPetalCount() step stepPetalCount()).map { it } // is [8, 12, 16, 20]
+        val ringCount = petalsPerRing.size // is 4
 
         // BEAT ENVELOPE
 
-        val petalsPerRing = listOf(8, 12, 16, 20).reversed()
+        val smooth = { x:Double -> smoothstep(0.0, 1.0, x) }
+        val punch = { x:Double -> 1 - (1-x).pow(4)}
+
+        val modulator = BeatModulator()
+
+
+        modulator[0] = BeatEnvelope(bpm(), 1).buildBySegments {
+            segmentJoin(0.5, 1.0) via punch
+            segmentJoin(1.0, 0.0) via punch
+        }
+        modulator[1] = BeatEnvelope(bpm(), 2).buildBySegments {
+            segmentJoin(.25, 1.0) via smooth
+            segmentJoin(1.0, 0.0) via Easing.CubicInOut
+        }
+        modulator[2] = BeatEnvelope(bpm(), 8).buildBySegments {
+            segment(0.0, 0.25, 0.0, 1.0) via smooth
+            segmentJoin(1.0, 0.0) via Easing.None // same as Easer.Linear(), default value
+        }
+        modulator[3] = BeatEnvelope(bpm(), 16).buildBySegments {
+            segmentJoin(8.0, 1.0) via punch
+            segmentJoin(16.0, 0.0) via punch
+        }
+
+        modulator.weights[3].set(1.0)
+
+        val clock = extend(Clock()) {
+            add(modulator)
+        }
+
+        // SLOW ROTATION
+
+        val rotIncList = petalsPerRing.map { n -> n * rotationFac() / petalsPerRing[0] }
+        val rotOffList = MutableList(ringCount) { 0.0 }
 
         //ROSE CURVE PETAL
 
@@ -71,24 +125,49 @@ fun main() = application {
         }
 
         extend {
-            petalsPerRing.forEachIndexed { i, petalAmount ->
-                val relI = i.toDouble()/petalsPerRing.size
-                (0 until petalAmount).forEach {j ->
+
+            // Tick the increments
+            rotOffList addEqual rotIncList
+
+            // Get samples within first beat
+            val radFacList = modulator.sampleList(0.0, (1 - 1.0/(petalsPerRing.size))*.5, petalsPerRing.size)
+                .map { 1.0 + it*beatRadFac() }
+
+            // 2-D for loop over (i,j) in [rings] x [petals in ring] drawn from back to front
+            petalsPerRing.reversed().forEachIndexed { i, petalAmount ->
+                val fracI = i.toDouble()/petalsPerRing.size
+                (0 until petalAmount).forEach { j ->
+                    val fracJ = j.toDouble()/petalAmount
                     drawer.isolated {
+                        // Translate to center
                         translate(width/2.0, height/2.0)
 
-                        val theta = j*360.0/petalAmount
-                        val rad = relI.map(0.0, 1.0, endRad(), startRad())
+                        // Basic petal pos in polar
+                        var theta = j*360.0/petalAmount
+                        var rad = fracI.map(0.0, 1.0, endRad(), startRad())
+                        // Movement offset
+                        theta += rotOffList[i]
+                        rad *= radFacList[i]
+
                         rotate(theta)
                         translate(rad, 0.0)
 
                         stroke = ColorRGBa.BLACK
-                        fill = ColorRGBa.PINK.shade(relI*.5+.5)
+                        fill = ColorRGBa.PINK.shade(fracI*.5+.5)
                         contour(petalContour)
                     }
                 }
             }
+        }
 
+        keyboard.keyDown.listen {
+            if (it.key == KEY_SPACEBAR) modulator.syncAll()
+            when (it.name) {
+                "1" -> modulator.pushTransition(listOf(1.0, 0.0, 0.0, 0.0), .3)
+                "2" -> modulator.pushTransition(listOf(0.0, 1.0, 0.0, 0.0), .3)
+                "3" -> modulator.pushTransition(listOf(0.0, 0.0, 1.0, 0.0), .3)
+                "4" -> modulator.pushTransition(listOf(0.0, 0.0, 0.0, 1.0), .3)
+            }
         }
     }
 }
