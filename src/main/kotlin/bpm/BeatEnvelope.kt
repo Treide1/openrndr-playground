@@ -17,8 +17,14 @@ import kotlin.math.sin
 class BeatEnvelope(
     val bpm: Double = 120.0,
     val beatsPerLoop: Int = 4,
-    val envelope: (Double) -> Double
+    val envelope: (Double) -> Double = { 0.0 }
 ) : ClockSubscriber {
+
+    // Throw an exception if beatsPerLoop is not strictly positive.
+    init {
+        if (beatsPerLoop < 1) throw IllegalArgumentException("What ? Have you ever seen a bar with $beatsPerLoop beats ?\n" +
+                "Make it at least 1.")
+    }
 
     /**
      * Time within the bar. Adjusted before frame is drawn, taken modulo "beat count" from [beatsPerLoop].first.
