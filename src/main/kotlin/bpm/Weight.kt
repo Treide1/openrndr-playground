@@ -56,9 +56,9 @@ class Weight(private var w: Double = 0.0){
     /**
      * Clear all transitions and set weight to 0.0.
      */
-    fun reset() {
+    fun set(newW: Double) {
         transitions.clear()
-        w = 0.0
+        w = newW
     }
 
     /**

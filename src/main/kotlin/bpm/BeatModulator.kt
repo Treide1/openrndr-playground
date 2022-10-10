@@ -1,7 +1,6 @@
 package bpm
 
 import org.openrndr.animatable.easing.Easing
-import java.lang.IllegalArgumentException
 
 const val MAX_ENVELOPES = 4
 
@@ -30,7 +29,7 @@ class BeatModulator : ClockSubscriber {
     operator fun set(i: Int, beatEnvelope: BeatEnvelope?) {
         if (i < 0 || i >= MAX_ENVELOPES) throw IllegalArgumentException("Index $i not allowed.")
         envelopes[i] = beatEnvelope
-        weights[i].reset()
+        weights[i].set(0.0)
     }
 
     /**
@@ -90,6 +89,20 @@ class BeatModulator : ClockSubscriber {
         for (i in 0 until MAX_ENVELOPES) {
             if (target.containsKey(i)) {
                 weights[i].pushTransition(null, target[i]!!, duration, easing)
+            }
+        }
+    }
+
+    /**
+     * For the given List [target], starts to transition the weights over the [duration] in seconds.
+     * Assign list element 0 to weight.get(0), 1 to weight.get(1) and so on.
+     * Under-length lists ignore remaining. Over-length lists are truncated.
+     * Optional [easing] from [Easing] enum from standard-OPENRNDR animatable package.
+     */
+    fun pushTransition(target: List<Double>, duration: Double, easing: Easing = Easing.None) {
+        for (i in 0 until MAX_ENVELOPES) {
+            if (i < target.size) {
+                weights[i].pushTransition(null, target[i], duration, easing)
             }
         }
     }
