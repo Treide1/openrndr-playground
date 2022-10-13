@@ -46,8 +46,6 @@ fun main() = application {
         title = "Beat Petal Rings"
     }
 
-
-
     program {
 
         val font = loadFont("data/fonts/default.otf", 35.0)
@@ -114,7 +112,7 @@ fun main() = application {
         val rotIncList = petalsPerRing.map { n -> n * rotationFac() / petalsPerRing[0] }
         val rotOffList = MutableList(ringCount) { 0.0 }
 
-        //ROSE CURVE PETAL
+        // ROSE CURVE PETAL
 
         val petalContour = contour {
             // Aliases for easy reading
