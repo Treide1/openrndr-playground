@@ -2,45 +2,25 @@ package bpm
 
 import org.openrndr.animatable.easing.Easing
 
-const val MAX_ENVELOPES = 4
+class BeatModulator(val envelopeCount : Int = 4) : ClockSubscriber {
 
-class BeatModulator : ClockSubscriber {
+
+    init {
+        if (envelopeCount < 0) throw IllegalArgumentException("envelopeCount must be non-negative, found $envelopeCount")
+    }
 
     /**
      * Array of nullable envelopes.
      * Access provides via [set] (as method or operator).
      * No direct read access to focus on range arithmetic.
      */
-     val envelopes = arrayOfNulls<BeatEnvelope?>(MAX_ENVELOPES)
+    val envelopes = arrayOfNulls<BeatEnvelope?>(envelopeCount)
 
     /**
      * Modulation weights for weighted sum of envelopes.
      * Can be subject of transitions, i.e. their value changes over time.
      */
-    val weights = Array(MAX_ENVELOPES) { Weight(0.0) }
-
-
-    /**
-     * Set the given [beatEnvelope] to the given index [i].
-     * Its weight is initialized to 0.0
-     *
-     * To start using it in the modulation, call [setAfterTransitions] with target values bigger than 0.0 .
-     */
-    operator fun set(i: Int, beatEnvelope: BeatEnvelope?) {
-        if (i < 0 || i >= MAX_ENVELOPES) throw IllegalArgumentException("Index $i not allowed.")
-        envelopes[i] = beatEnvelope
-        weights[i].set(0.0)
-    }
-
-    /**
-     * Get the [BeatEnvelope] at the given index [i] or null.
-     *
-     * To start using it in the modulation, call [setAfterTransitions] with target values bigger than 0.0 .
-     */
-    operator fun get(i: Int): BeatEnvelope? {
-        if (i < 0 || i >= MAX_ENVELOPES) throw IllegalArgumentException("Index $i not allowed.")
-        return envelopes.getOrNull(i)
-    }
+    val weights = Array(envelopeCount) { Weight(0.0) }
 
     /**
      * Ticks from program are handed to envelopes and weights.
@@ -63,7 +43,7 @@ class BeatModulator : ClockSubscriber {
 
     @Deprecated("No benefit other keeping reference to beatEnvelope and sampling directly.")
     fun sampleList(envID: Int, phaseStart: Double, phaseEnd: Double, size: Int): List<Double> {
-        if (envID < 0 || envID > MAX_ENVELOPES) throw IllegalArgumentException()
+        if (envID < 0 || envID > envelopeCount) throw IllegalArgumentException()
         return envelopes[envID]?.sampleList(phaseStart, phaseEnd, size) ?: List(size) { 0.0 }
     }
 
@@ -86,7 +66,7 @@ class BeatModulator : ClockSubscriber {
      * Optional [easing] from [Easing] enum from standard-OPENRNDR animatable package.
      */
     fun pushTransition(target: Map<Int, Double>, duration: Double, easing: Easing = Easing.None) {
-        for (i in 0 until MAX_ENVELOPES) {
+        for (i in 0 until envelopeCount) {
             if (target.containsKey(i)) {
                 weights[i].pushTransition(null, target[i]!!, duration, easing)
             }
@@ -100,7 +80,7 @@ class BeatModulator : ClockSubscriber {
      * Optional [easing] from [Easing] enum from standard-OPENRNDR animatable package.
      */
     fun pushTransition(target: List<Double>, duration: Double, easing: Easing = Easing.None) {
-        for (i in 0 until MAX_ENVELOPES) {
+        for (i in 0 until envelopeCount) {
             if (i < target.size) {
                 weights[i].pushTransition(null, target[i], duration, easing)
             }
@@ -110,8 +90,8 @@ class BeatModulator : ClockSubscriber {
     /**
      * After all transitions are over, set the weights to the values from [target].
      */
-    fun setAfterTransitions(target: Map<Int, Double>) {
-        for (i in 0 until MAX_ENVELOPES) {
+    fun setWeightsAfterTransitions(target: Map<Int, Double>) {
+        for (i in 0 until envelopeCount) {
             if (target.containsKey(i)) {
                 weights[i].pushTransition(null, target[i]!!, 0.0, Easing.None)
             }
@@ -121,9 +101,9 @@ class BeatModulator : ClockSubscriber {
     /**
      * After all transitions are over, set the weights to the values from [target].
      */
-    fun setAfterTransitions(vararg target: Pair<Int, Double>) {
+    fun setWeightsAfterTransitions(vararg target: Pair<Int, Double>) {
         val map = mapOf(*target)
-        setAfterTransitions(map)
+        setWeightsAfterTransitions(map)
     }
 
     /**

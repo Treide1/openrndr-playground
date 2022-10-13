@@ -67,7 +67,7 @@ fun main() = application {
         val petalsPerRing = (innerPetalCount() .. outerPetalCount() step stepPetalCount()).map { it } // is [8, 12, 16, 20]
         val ringCount = petalsPerRing.size // is 4
 
-        // BEAT ENVELOPE
+        // BEAT MODULATOR
 
         val smooth = { x:Double -> smoothstep(0.0, 1.0, x) }
         val punch = { x:Double -> 1 - (1-x).pow(4)}
@@ -75,19 +75,19 @@ fun main() = application {
         val modulator = BeatModulator()
 
 
-        modulator[0] = BeatEnvelope(bpm(), 1).buildBySegments {
+        modulator.envelopes[0] = BeatEnvelope(bpm(), 1).buildBySegments {
             segmentJoin(0.5, 1.0) via punch
             segmentJoin(1.0, 0.0) via punch
         }
-        modulator[1] = BeatEnvelope(bpm(), 2).buildBySegments {
+        modulator.envelopes[1] = BeatEnvelope(bpm(), 2).buildBySegments {
             segmentJoin(.25, 1.0) via smooth
             segmentJoin(1.0, 0.0) via Easing.CubicInOut
         }
-        modulator[2] = BeatEnvelope(bpm(), 8).buildBySegments {
+        modulator.envelopes[2] = BeatEnvelope(bpm(), 8).buildBySegments {
             segment(0.0, 0.25, 0.0, 1.0) via smooth
             segmentJoin(1.0, 0.0) via Easing.None // same as Easer.Linear(), default value
         }
-        modulator[3] = BeatEnvelope(bpm(), 16).buildBySegments {
+        modulator.envelopes[3] = BeatEnvelope(bpm(), 16).buildBySegments {
             segmentJoin(8.0, 1.0) via punch
             segmentJoin(16.0, 0.0) via punch
         }

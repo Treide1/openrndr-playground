@@ -51,12 +51,14 @@ fun main() = application {
         }
 
         // Adding two beatEnvelopes to the beatModulator
-        beatModulator[0] = constructSine(bpm, 4, 4.0) // lowFreqSine
-        beatModulator[1] = constructSine(bpm, 4, 1.0, .4) // highFreqSine
+        val lfs = constructSine(bpm, 4, 4.0) // lowFreqSine
+        val hfs = constructSine(bpm, 4, 1.0, .4) // highFreqSine
+        beatModulator.envelopes[0] = lfs
+        beatModulator.envelopes[1] = hfs
 
         // We also set the initial weights
         val targetWeights = mutableMapOf(0 to 1.0, 1 to 0.0)
-        beatModulator.setAfterTransitions(targetWeights)
+        beatModulator.setWeightsAfterTransitions(targetWeights)
 
         extend {
 
@@ -64,14 +66,14 @@ fun main() = application {
             drawer.isolated {
                 fill = leftColor
                 val x = leftX*.3
-                val y = beatModulator[0]!!.sample().map(0.0, 1.0, lowerY, upperY)
+                val y = lfs.sample().map(0.0, 1.0, lowerY, upperY)
                 circle(x, y, rad)
             }
             // Comparison circle right
             drawer.isolated {
                 fill = rightColor
                 val x = leftX*.7
-                val y = beatModulator[1]!!.sample().map(0.0, 1.0, lowerY, upperY)
+                val y = hfs.sample().map(0.0, 1.0, lowerY, upperY)
                 circle(x, y, rad)
             }
 
