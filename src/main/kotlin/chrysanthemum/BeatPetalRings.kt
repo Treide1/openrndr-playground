@@ -14,6 +14,7 @@ import org.openrndr.math.Polar
 import org.openrndr.math.Vector2
 import org.openrndr.math.map
 import org.openrndr.math.smoothstep
+import org.openrndr.shape.Rectangle
 import org.openrndr.shape.contour
 import utils.toDegrees
 import kotlin.math.PI
@@ -157,6 +158,38 @@ fun main() = application {
                         contour(petalContour)
                     }
                 }
+            }
+
+            // Show Controls
+            for (i in 0..3) {
+                val corner = Vector2(5.0, height - 125.0) + Vector2(25.0,0.0)*i.toDouble()
+                val off = Vector2(5.0, 15.0)
+                val weight = modulator.weights[i].value
+                drawer.isolated {
+                    fill = ColorRGBa.WHITE.shade(weight)
+                    stroke = fill
+                    rectangle(corner, 20.0)
+                    fill = ColorRGBa.WHITE.shade(1-weight)
+                    text((i+1).toString(), corner + off)
+                }
+            }
+
+            // Show Sampling
+            contour {
+                val samples = modulator.sampleList(0.0, 1.0*0.5, 25)
+                val boundary = Rectangle(15.0, height-90.0, 75.0, 75.0).also {
+                    drawer.fill = null
+                    drawer.stroke = ColorRGBa.GRAY
+                    drawer.rectangle(it)
+                }
+                samples.forEachIndexed { i, v ->
+                    val x = i.toDouble() / (samples.size) * boundary.width + boundary.corner.x
+                    val y = (1-v) * boundary.height + boundary.corner.y
+                    moveOrLineTo(x, y)
+                }
+            }.also {
+                drawer.stroke = ColorRGBa.WHITE
+                drawer.contour(it)
             }
         }
 
