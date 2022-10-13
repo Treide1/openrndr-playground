@@ -18,7 +18,7 @@ import org.openrndr.math.map
  * SPACEBAR - Change target modulation (via transition)
  * "c" - Cancel all transitions. Modulation doesn't change anymore.
  * "s" - Sync the BeatEnvelopes to the moment of key press
- * "p" - Pause the enitre program
+ * "p" - Pause the entire program
  */
 fun main() = application {
     configure {
