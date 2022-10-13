@@ -24,7 +24,7 @@ fun main() = application {
     configure {
         width = 1280
         height = 640
-        title = "BeatModulator Demo"
+        title = "BeatModulator Demo 01"
     }
 
     program {
