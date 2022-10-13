@@ -5,11 +5,13 @@ import bpm.BeatEnvelopeBuilder.Companion.buildBySegments
 import bpm.BeatModulator
 import bpm.Clock
 import bpm.addEqual
+import org.openrndr.Fullscreen
 import org.openrndr.KEY_SPACEBAR
 import org.openrndr.animatable.easing.Easing
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.isolated
+import org.openrndr.draw.loadFont
 import org.openrndr.math.Polar
 import org.openrndr.math.Vector2
 import org.openrndr.math.map
@@ -40,12 +42,20 @@ import kotlin.math.pow
  */
 fun main() = application {
     configure {
-        width = 1000
-        height = 1000
+        fullscreen = Fullscreen.SET_DISPLAY_MODE
         title = "Beat Petal Rings"
     }
 
+
+
     program {
+
+        val font = loadFont("data/fonts/default.otf", 35.0)
+
+//        extend(ScreenRecorder()) {
+//            this.maximumDuration = 30.0
+//            this.outputFile = ".\\src\\main\\kotlin\\chrysanthemum\\beatPetalRings.mp4"
+//        }
 
         // Config
         fun contentSize() = 100.0
@@ -162,13 +172,15 @@ fun main() = application {
 
             // Show Controls
             for (i in 0..3) {
-                val corner = Vector2(5.0, height - 125.0) + Vector2(25.0,0.0)*i.toDouble()
-                val off = Vector2(5.0, 15.0)
+                val corner = Vector2(10.0, height - 250.0) + Vector2(50.0,0.0)*i.toDouble()
+                val off = Vector2(12.0, 30.0)
                 val weight = modulator.weights[i].value
                 drawer.isolated {
                     fill = ColorRGBa.WHITE.shade(weight)
                     stroke = fill
-                    rectangle(corner, 20.0)
+                    strokeWeight *= 2.5
+                    fontMap = font
+                    rectangle(corner, 40.0)
                     fill = ColorRGBa.WHITE.shade(1-weight)
                     text((i+1).toString(), corner + off)
                 }
@@ -176,9 +188,10 @@ fun main() = application {
 
             // Show Sampling
             contour {
-                val samples = modulator.sampleList(0.0, 1.0*0.5, 25)
-                val boundary = Rectangle(15.0, height-90.0, 75.0, 75.0).also {
+                val samples = modulator.sampleList(0.0, 1.0*0.5, 50)
+                val boundary = Rectangle(30.0, height-180.0, 150.0, 150.0).also {
                     drawer.fill = null
+                    drawer.strokeWeight *= 2.5
                     drawer.stroke = ColorRGBa.GRAY
                     drawer.rectangle(it)
                 }
