@@ -2,6 +2,7 @@
 
 package utils
 
+import org.openrndr.Program
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.Drawer
 import org.openrndr.draw.isolated
@@ -10,7 +11,6 @@ import org.openrndr.shape.Rectangle
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.pow
-import kotlin.math.sign
 
 /**
  * Given a 2-dimensional list [list2D] and a String item [item],
@@ -180,3 +180,9 @@ fun lerpBetweenControlPoints(x: Double, controlPointMap: HashMap<Double, Double>
     val upperControlY = controlPointMap[upperControlX]!!
     return x.map(lowerControlX, upperControlX, lowerControlY, upperControlY)
 }
+
+/** Width measured in Viewport width percentage of this program. Returns absolute pixel width.*/
+fun Program.vw(p: Double): Double = this.width * p
+
+/** Height measured in Viewport height percentage of this program. Returns absolute pixel height.*/
+fun Program.vh(p: Double): Double = this.height * p
