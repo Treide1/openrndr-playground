@@ -3,8 +3,8 @@ package playground
 import bpm.BeatEnvelope
 import bpm.BeatEnvelopeBuilder.Companion.buildBySegments
 import bpm.Clock
+import org.openrndr.CursorType
 import org.openrndr.KEY_SPACEBAR
-import org.openrndr.MouseCursorHideMode
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.Drawer
@@ -27,11 +27,12 @@ import org.openrndr.shape.contour
  * Display as 2 rectangles in horizontal layout moving in y-range, up and down.
  */
 fun main() = application {
+    configure {
+        width=1000
+        height=800
+    }
+
     program {
-        configure {
-            width=1000
-            height=800
-        }
 
         // BeatEnvelope Setup
         val bpm = 125.0
@@ -44,7 +45,10 @@ fun main() = application {
         }
         var capEnv = BeatEnvelope(bpm, beatsPerLoop)
 
-        val clock = extend(Clock()) { add(absEnv); add(capEnv) }
+        val clock = extend(Clock()) {
+            add(absEnv)
+            add(capEnv)
+        }
 
         // Visual Setup
         val margin = 30.0
@@ -89,8 +93,8 @@ fun main() = application {
             val y1 = mouseMovement.minOf { it.second.y }
 
             // Linear Transformation
-            val dtPerBeat = 60.0 / bpm
-            val tScl = mouseMovement.map { (it.first - t0 + 0.001) /  dtPerBeat }
+            val beatsPerSecond = bpm / 60.0
+            val tScl = mouseMovement.map { (it.first - t0 + 0.001) *  beatsPerSecond }
             val yScl = mouseMovement.map { (it.second.y).map(y0, y1, 0.0, 1.0) }
 
             clock.remove(capEnv)
