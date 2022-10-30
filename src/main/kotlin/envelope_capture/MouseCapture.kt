@@ -1,0 +1,115 @@
+package envelope_capture
+
+import org.openrndr.Extension
+import org.openrndr.Mouse
+import org.openrndr.Program
+import org.openrndr.color.ColorRGBa
+import org.openrndr.draw.Drawer
+import org.openrndr.draw.isolated
+import org.openrndr.extra.color.presets.DARK_RED
+import org.openrndr.math.Vector2
+
+/**
+ * Class to capture and convert mouse movement easily.
+ *
+ * Use as an Extension and [start] and [stop] the capturing.
+ * Define [onCaptureStarted], [onCaptured] and [onCaptureStopped] in one go.
+ * You can access the [capturedMovement] directly.
+ */
+class MouseCapture(val mouse: Mouse) : Extension {
+
+    /**
+     * Data class of single mouse capture.
+     * @param t Time of capture, relative to start of capturing. Calling [start] resets this to 0.
+     * @param pos Mouse position being captured in screen-absolute xy coordinates.
+     */
+    data class CaptureEvent(val t: Double, val pos: Vector2)
+
+    override var enabled = true
+
+    private var isCapturing = false
+
+    /**
+     * If true, shows a capture symbol instead of the mouse cursor.
+     */
+    var isUsingRecordCursor = true
+
+    var onCaptureStarted : () -> Unit = {}
+    var onCaptured : () -> Unit = {}
+    var onCaptureStopped : () -> Unit = {}
+
+    private var timeSinceCapturing = 0.0
+    private var captureLength = 0.0
+
+    fun setLengthByBpm(bpm: Double, beatCount: Int) {
+        captureLength =  beatsToSeconds(bpm, beatCount)
+    }
+
+    /**
+     * Contains every [CaptureEvent] of this current or latest concluded capturing in chronological order.
+     *
+     * Calling [start] clears this list.
+     */
+    val capturedMovement = mutableListOf<CaptureEvent>()
+
+    /**
+     * Overrides [beforeDraw] from [Extension].
+     * Does the capture if isCapturing is on.
+     * Also performs the [onCaptured] block.
+     */
+    override fun beforeDraw(drawer: Drawer, program: Program) {
+        if (isCapturing) {
+            val pos = mouse.position
+
+            timeSinceCapturing += program.deltaTime
+            val t = timeSinceCapturing
+
+            capturedMovement.add(CaptureEvent(t, pos))
+
+            if (isUsingRecordCursor) {
+                drawer.isolated {
+
+                    // TODO: Filling circle over time, proportional filling over angle 0.0 -> 360.0
+                    fill = ColorRGBa.RED
+                    stroke = ColorRGBa.DARK_RED
+                    circle(pos, 10.0)
+                }
+
+            }
+
+            this.onCaptured()
+        }
+    }
+
+    /**
+     * Starts the capturing. This frames' capture will be excluded.
+     *
+     * First capture will happen on the next frame, but the time starts this frame.
+     * Thus, every [CaptureEvent] will have [CaptureEvent.t] > 0.
+     */
+    fun start() {
+        isCapturing = true
+        timeSinceCapturing = 0.0
+        capturedMovement.clear()
+
+        if (isUsingRecordCursor) mouse.cursorVisible = false
+
+        this.onCaptureStarted()
+    }
+
+    /**
+     * Stops the capturing. This frames' capture will still be included.
+     */
+    fun stop() {
+        isCapturing = false
+        if (isUsingRecordCursor) mouse.cursorVisible = true
+
+        this.onCaptureStopped()
+    }
+
+}
+
+/**
+ * Given a bpm and a count of beats, returns the time in seconds this many beats take.
+ */
+fun beatsToSeconds(bpm: Double, beatCount: Int) : Double = (60.0 / bpm) * beatCount
