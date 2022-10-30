@@ -42,7 +42,10 @@ import kotlin.math.pow
  */
 fun main() = application {
     configure {
-        fullscreen = Fullscreen.SET_DISPLAY_MODE
+        width=1080
+        height=640
+
+        fullscreen=Fullscreen.CURRENT_DISPLAY_MODE
         title = "Beat Petal Rings"
     }
 
