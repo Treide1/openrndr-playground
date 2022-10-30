@@ -3,14 +3,14 @@ package playground
 import bpm.BeatEnvelope
 import bpm.BeatEnvelopeBuilder.Companion.buildBySegments
 import bpm.Clock
-import org.openrndr.CursorType
+import envelope_capture.MouseCapture
+import envelope_capture.beatsToSeconds
 import org.openrndr.KEY_SPACEBAR
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.Drawer
 import org.openrndr.draw.isolated
 import org.openrndr.extra.color.presets.GAINSBORO
-import org.openrndr.math.Vector2
 import org.openrndr.math.map
 import org.openrndr.shape.Rectangle
 import org.openrndr.shape.contour
@@ -42,8 +42,8 @@ fun main() = application {
             segmentJoin(2.0, 0.0)
             segmentJoin(3.0, 1.0)
             segmentJoin(4.0, 0.0)
-        }
-        var capEnv = BeatEnvelope(bpm, beatsPerLoop)
+        } // absolute envelope
+        var capEnv = BeatEnvelope(bpm, beatsPerLoop) // captured envelope
 
         val clock = extend(Clock()) {
             add(absEnv)
@@ -61,23 +61,14 @@ fun main() = application {
         val yUpper = margin
         val yDisplay = height - h - margin
 
-        // Recording Setup
-        var isRecording = false
-        val mouseMovement = mutableListOf<Pair<Double, Vector2>>()
-
-        fun startRecording() {
-            isRecording = true
-            mouse.cursorVisible = false
-
-            mouseMovement.clear()
+        // Capturing Setup
+        val mouseCapture = extend(MouseCapture(mouse)) {
+            captureLength = beatsToSeconds(4, bpm)
         }
 
-        fun stopRecording() {
-            isRecording = false
-            mouse.cursorVisible = true
+        mouseCapture.onCaptureStopped = {
+            println("Size of captureEvents: ${captureEvents.size}")
 
-            println("mouseMovement: $mouseMovement")
-            println("size: ${mouseMovement.size}")
             // Parse mouseMovement into BeatEnvelope
             // Currently assumes:
             //  1. Movement only in y direction
@@ -87,20 +78,20 @@ fun main() = application {
             //  5. Recording started exactly on beat
 
             // Transforming range
-            val t0 = mouseMovement[0].first
-            val t1 = mouseMovement.last().first
-            val y0 = mouseMovement[0].second.y
-            val y1 = mouseMovement.minOf { it.second.y }
+            val t0 = 0.0 // t from zero
+            val t1 = beatsToSeconds(4, bpm) // t to 4 beats as seconds
+            val y0 = captureEvents.first().pos.y // y from first captured y
+            val y1 = captureEvents.minOf { it.pos.y } // y to "highest" captured y (min y of screen)
 
             // Linear Transformation
-            val beatsPerSecond = bpm / 60.0
-            val tScl = mouseMovement.map { (it.first - t0 + 0.001) *  beatsPerSecond }
-            val yScl = mouseMovement.map { (it.second.y).map(y0, y1, 0.0, 1.0) }
+            val tScl = captureEvents.map { (it.t).map(t0, t1, 0.0, 4.0) }
+            val yScl = captureEvents.map { (it.pos.y).map(y0, y1, 0.0, 1.0) }
 
             clock.remove(capEnv)
             capEnv = BeatEnvelope(bpm, beatsPerLoop).buildBySegments {
-                for(i in 0 until mouseMovement.size) {
-                    println("t, y: ${tScl[i]} ${yScl[i]}")
+                for(i in 0 until captureEvents.size) {
+                    if (i < 3 || i > captureEvents.size - 3) println("t, y: ${tScl[i]} ${yScl[i]}")
+                    if (i == 3) println("t, y: ... ")
                     segmentJoin(tScl[i], yScl[i])
                 }
                 if (this.lastT <= beatsPerLoop.toDouble()) segmentJoin(beatsPerLoop.toDouble(), 0.0)
@@ -140,27 +131,12 @@ fun main() = application {
             drawer.displaySamplesInRect(samples, 0.0, 1.0, rect)
         }
 
-        // Capturing process
-        extend {
-            if (isRecording) {
-                val pos = mouse.position
-
-                drawer.isolated {
-                    fill = ColorRGBa.RED
-                    stroke = null
-                    circle(pos, 10.0)
-                }
-                val t = program.application.seconds
-                mouseMovement.add(Pair(t, pos))
-            }
-        }
-
         keyboard.keyDown.listen {
-            if (it.name == "r") startRecording()
+            if (it.name == "r") mouseCapture.start()
             if (it.key == KEY_SPACEBAR) clock.enabled = clock.enabled.not()
         }
         keyboard.keyUp.listen {
-            if (it.name == "r") stopRecording()
+            if (it.name == "r") mouseCapture.stop()
         }
 
     }

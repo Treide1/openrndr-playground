@@ -14,7 +14,7 @@ import org.openrndr.math.Vector2
  *
  * Use as an Extension and [start] and [stop] the capturing.
  * Define [onCaptureStarted], [onCaptured] and [onCaptureStopped] in one go.
- * You can access the [capturedMovement] directly.
+ * You can access the [captureEvents] directly.
  */
 class MouseCapture(val mouse: Mouse) : Extension {
 
@@ -27,30 +27,27 @@ class MouseCapture(val mouse: Mouse) : Extension {
 
     override var enabled = true
 
-    private var isCapturing = false
-
     /**
      * If true, shows a capture symbol instead of the mouse cursor.
      */
     var isUsingRecordCursor = true
 
-    var onCaptureStarted : () -> Unit = {}
-    var onCaptured : () -> Unit = {}
-    var onCaptureStopped : () -> Unit = {}
+    var onCaptureStarted : MouseCapture.() -> Unit = {}
+    var onCaptured : MouseCapture.() -> Unit = {}
+    var onCaptureStopped : MouseCapture.() -> Unit = {}
 
+    var isCapturing = false
+        private set
     private var timeSinceCapturing = 0.0
-    private var captureLength = 0.0
+    var captureLength = 0.0
 
-    fun setLengthByBpm(bpm: Double, beatCount: Int) {
-        captureLength =  beatsToSeconds(bpm, beatCount)
-    }
 
     /**
      * Contains every [CaptureEvent] of this current or latest concluded capturing in chronological order.
      *
      * Calling [start] clears this list.
      */
-    val capturedMovement = mutableListOf<CaptureEvent>()
+    val captureEvents = mutableListOf<CaptureEvent>()
 
     /**
      * Overrides [beforeDraw] from [Extension].
@@ -64,7 +61,7 @@ class MouseCapture(val mouse: Mouse) : Extension {
             timeSinceCapturing += program.deltaTime
             val t = timeSinceCapturing
 
-            capturedMovement.add(CaptureEvent(t, pos))
+            captureEvents.add(CaptureEvent(t, pos))
 
             if (isUsingRecordCursor) {
                 drawer.isolated {
@@ -90,7 +87,7 @@ class MouseCapture(val mouse: Mouse) : Extension {
     fun start() {
         isCapturing = true
         timeSinceCapturing = 0.0
-        capturedMovement.clear()
+        captureEvents.clear()
 
         if (isUsingRecordCursor) mouse.cursorVisible = false
 
@@ -112,4 +109,4 @@ class MouseCapture(val mouse: Mouse) : Extension {
 /**
  * Given a bpm and a count of beats, returns the time in seconds this many beats take.
  */
-fun beatsToSeconds(bpm: Double, beatCount: Int) : Double = (60.0 / bpm) * beatCount
+fun beatsToSeconds(beatCount: Int, bpm: Double) : Double = (60.0 / bpm) * beatCount
