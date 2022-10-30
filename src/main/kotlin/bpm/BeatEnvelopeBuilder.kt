@@ -16,7 +16,7 @@ class BeatEnvelopeBuilder internal constructor(){
     fun segment(fromT: Double, toT: Double, fromX: Double, toX: Double): EnvelopeSegment {
         if (fromT >= toT) throw IllegalArgumentException(
             "Time has to progress forward. Thus, segment(...) requires 'fromT' being less than 'toT'. " +
-                    "Found fromT=$fromT, toT=$fromT instead."
+                    "Found fromT=$fromT, toT=$toT instead."
         )
 
         val seg =  EnvelopeSegment(fromT, toT, fromX, toX)
