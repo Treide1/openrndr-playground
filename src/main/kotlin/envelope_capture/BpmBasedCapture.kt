@@ -62,7 +62,7 @@ fun main() = application {
         val yDisplay = height - h - margin
 
         // Capturing Setup
-        val mouseCapture = extend(MouseCapture(mouse)) {
+        val mouseCapture = extend(MouseCapture()) {
             captureLength = beatsToSeconds(4, bpm)
         }
 

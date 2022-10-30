@@ -79,7 +79,7 @@ class BeatEnvelope(
      * @param size Amount of samples. Also, size of list.
      * @param block
      */
-    fun samplePhaseIndex(phaseStart: Double, phaseEnd: Double, size: Int, block: BeatEnvelope.(Double, Double, Int) -> Unit) {
+    fun forEachSamplePhaseIndex(phaseStart: Double, phaseEnd: Double, size: Int, block: BeatEnvelope.(Double, Double, Int) -> Unit) {
         val phaseList = interpolationList(phaseStart, phaseEnd, size)
         phaseList.forEachIndexed { index, phase ->
             this.block(sample(phase), phase, index)

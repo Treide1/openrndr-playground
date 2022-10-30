@@ -186,3 +186,7 @@ fun Program.vw(p: Double): Double = this.width * p
 
 /** Height measured in Viewport height percentage of this program. Returns absolute pixel height.*/
 fun Program.vh(p: Double): Double = this.height * p
+
+fun Int.map(beforeLeft: Int, beforeRight: Int, afterLeft: Double, afterRight: Double) : Double {
+    return this.toDouble().map(beforeLeft.toDouble(), beforeRight.toDouble(), afterLeft, afterRight)
+}

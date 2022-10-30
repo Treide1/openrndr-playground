@@ -53,7 +53,7 @@ fun main() = application {
 
         // Add draw process to program.
         extend {
-            beatEnvelope.samplePhaseIndex(0.0, 4.0, dotCount) { sample, phase, index ->
+            beatEnvelope.forEachSamplePhaseIndex(0.0, 4.0, dotCount) { sample, phase, index ->
                 // Absolute phase of local phase added to global phase.
                 val absolutePhase = phase + this.phase
 

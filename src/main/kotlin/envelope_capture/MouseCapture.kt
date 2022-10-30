@@ -16,7 +16,7 @@ import org.openrndr.math.Vector2
  * Define [onCaptureStarted], [onCaptured] and [onCaptureStopped] in one go.
  * You can access the [captureEvents] directly.
  */
-class MouseCapture(val mouse: Mouse) : Extension {
+class MouseCapture : Extension {
 
     /**
      * Data class of single mouse capture.
@@ -49,6 +49,13 @@ class MouseCapture(val mouse: Mouse) : Extension {
      */
     val captureEvents = mutableListOf<CaptureEvent>()
 
+    lateinit var mouse: Mouse
+
+    override fun setup(program: Program) {
+        super.setup(program)
+        mouse = program.mouse
+    }
+
     /**
      * Overrides [beforeDraw] from [Extension].
      * Does the capture if isCapturing is on.
@@ -68,18 +75,20 @@ class MouseCapture(val mouse: Mouse) : Extension {
 
             captureEvents.add(CaptureEvent(t, pos))
 
-            if (isUsingRecordCursor) {
-                drawer.isolated {
+            this.onCaptured()
+        }
+    }
 
-                    // TODO: Filling circle over time, proportional filling over angle 0.0 -> 360.0
-                    fill = ColorRGBa.RED
-                    stroke = ColorRGBa.DARK_RED
-                    circle(pos, 10.0)
-                }
+    override fun afterDraw(drawer: Drawer, program: Program) {
+        if (isCapturing && isUsingRecordCursor) {
+            drawer.isolated {
 
+                // TODO: Filling circle over time, proportional filling over angle 0.0 -> 360.0
+                fill = ColorRGBa.RED
+                stroke = ColorRGBa.DARK_RED
+                circle(mouse.position, 10.0)
             }
 
-            this.onCaptured()
         }
     }
 
