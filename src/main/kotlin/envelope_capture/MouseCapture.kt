@@ -61,6 +61,11 @@ class MouseCapture(val mouse: Mouse) : Extension {
             timeSinceCapturing += program.deltaTime
             val t = timeSinceCapturing
 
+            if (t > captureLength) {
+                isCapturing = false
+                return
+            }
+
             captureEvents.add(CaptureEvent(t, pos))
 
             if (isUsingRecordCursor) {
