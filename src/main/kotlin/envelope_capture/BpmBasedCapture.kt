@@ -1,10 +1,8 @@
-package playground
+package envelope_capture
 
 import bpm.BeatEnvelope
 import bpm.BeatEnvelopeBuilder.Companion.buildBySegments
 import bpm.Clock
-import envelope_capture.MouseCapture
-import envelope_capture.beatsToSeconds
 import org.openrndr.KEY_SPACEBAR
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa

@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package bpm
 
 import org.openrndr.animatable.easing.Easing
@@ -8,6 +10,8 @@ class BeatModulator(val envelopeCount : Int = 4) : ClockSubscriber {
     init {
         if (envelopeCount < 0) throw IllegalArgumentException("envelopeCount must be non-negative, found $envelopeCount")
     }
+
+    var isTicking = true
 
     /**
      * Array of nullable envelopes.
@@ -26,6 +30,7 @@ class BeatModulator(val envelopeCount : Int = 4) : ClockSubscriber {
      * Ticks from program are handed to envelopes and weights.
      */
     override fun tick(seconds: Double, deltaTime: Double, frameCount: Int) {
+        if (!isTicking) return
         envelopes.forEach { env -> env?.tick(seconds, deltaTime, frameCount) }
         weights.forEach { weight -> weight.tick(deltaTime) }
     }

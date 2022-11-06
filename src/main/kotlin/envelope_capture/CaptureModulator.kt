@@ -1,5 +1,6 @@
 package envelope_capture
 
+import animation.SecondOrderDynamics
 import bpm.BeatEnvelope
 import bpm.BeatEnvelopeBuilder.Companion.buildBySegments
 import bpm.BeatModulator
@@ -13,6 +14,7 @@ import org.openrndr.color.ColorRGBa
 import org.openrndr.extra.color.presets.BLUE_VIOLET
 import org.openrndr.extra.color.presets.MIDNIGHT_BLUE
 import org.openrndr.math.map
+import org.openrndr.math.smoothstep
 import org.openrndr.shape.contour
 import utils.map
 import utils.vh
@@ -58,6 +60,44 @@ fun main() = application {
 
         extend(Clock()) { add(beatModulator) }
 
+        fun interpretKinematicAsBeatEnvelope(tL: List<Double>, xL: List<Double>) : BeatEnvelope {
+            val tOmitAfter = 4.0 - 0.200 // drop last 200 ms
+            val tL = tL.dropLastWhile { it > tOmitAfter }
+            val xL = xL.subList(0, tL.size)
+
+            val size = tL.size
+            val xFirst = xL.first()
+            val sod = SecondOrderDynamics(1.0, 3.0, 0.0, xFirst)
+
+            return BeatEnvelope(bpm, 4).buildBySegments {
+                segment(0.0, tL.first(),xFirst, sod.update(tL.first(), xL[0]))
+                for (i in 1 until size) {
+                    val dt = tL[i] - tL[i-1]
+                    segmentJoin(tL[i], sod.update(dt, xL[i]))
+                }
+
+                // Close last segment gracefully
+                // Leave and enter with same value (x) and rise (v)
+                val x0 = sod.yp
+                val x1 = sod.y
+                val x2 = xFirst
+                val t0 = tL[tL.size-2]
+                val t1 = tL.last()
+                val t2 = 4.0
+                val v01 = (x1 - x0) / (t1 - t0)
+                val v12 = (x2 - x1) / (t2 - t1)
+                val vScl = (v01/v12) // Scaled because normalized easing is assumed
+                // Interpolation block of shape h(x) = (1-fac(t)) * a(x) + fac(t)*b(x)
+                // Works as C1-Interpolation because
+                // fac(0) = 0, fac(1) = 1, fac'(0) = 0 and fac'(1) = 0
+                val block: (Double) -> Double = { t ->
+                    val fac = smoothstep(0.0, 1.0, t)
+                    (1-fac)*(t*vScl) + (fac)*(1)
+                }
+                segmentJoin(4.0, xFirst) via block
+            }
+        }
+
         val mouseCapture = extend(MouseCapture()) {
             captureLength = beatsToSeconds(4, bpm)
         }
@@ -74,14 +114,7 @@ fun main() = application {
             val yScl = captureEvents.map { (it.pos.y).map(y0, y1, 0.0, 1.0) }
 
             val targetEnv = envSelection-1
-            beatModulator.envelopes[targetEnv] = BeatEnvelope(bpm, 4).buildBySegments {
-                for(i in 0 until captureEvents.size) {
-                    if (i < 3 || i > captureEvents.size - 3) println("t, y: ${tScl[i]} ${yScl[i]}")
-                    if (i == 3) println("t, y: ... ")
-                    segmentJoin(tScl[i], yScl[i])
-                }
-                if (this.lastT <= 4.0) segmentJoin(4.0, 0.0)
-            }
+            beatModulator.envelopes[targetEnv] = interpretKinematicAsBeatEnvelope(tScl, yScl)//interpretNaiveAsBeatEnvelope(tScl, yScl)
         }
 
         extend {
@@ -107,9 +140,7 @@ fun main() = application {
                     drawer.fill = colorAt(relI)
                     drawer.contour(it)
                 }
-
             }
-
         }
 
         keyboard.keyDown.listen {
@@ -121,6 +152,7 @@ fun main() = application {
                 "3" -> envSelection = 3
                 "4" -> envSelection = 4
                 "r" -> mouseCapture.start()
+                "p" -> beatModulator.isTicking = beatModulator.isTicking.not()
             }
         }
 
