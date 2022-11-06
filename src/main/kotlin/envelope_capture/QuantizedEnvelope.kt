@@ -39,7 +39,6 @@ fun main() = application {
         val sod = SecondOrderDynamics(2.0, 1.0, -.05, 0.0)
         extend {
             if (deltaTime > 0.0) sod.update(deltaTime, level.toDouble())
-            println("deltaTime = $deltaTime, level = $level, sod.y = ${sod.y}")
 
             drawer.isolated {
                 val x = vw(.25)
