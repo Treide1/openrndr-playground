@@ -33,23 +33,39 @@ fun main() = application {
     }
 
     program {
+
+        // Data Layer
+        // (also Control Scheme)
+        // Sets up data containers, namely keyMap and toggleMap.
+        // Defines visual elements and how they are bound to the data
+
         // Keep both even ! Some effects rely on rows == cols == 0 (mod 2)
         val rows = 4
         val cols = 8
 
+        // Hardcoded key layout for grid control
         val keyMap = listOf(
             "12345678", "qwertzui", "asdfghjk", "yxcvbnm,"
         ).map { it.splitByLength() }
 
         val toggleMap = keyMap.map { col -> col.map { 0.0 }.toMutableList() }.toMutableList()
 
+        // Visual grid layout
         val grid = drawer.bounds.grid(cols , rows, 200.0, 200.0, 10.0, 10.0)
 
+        // randomColorMode enables noise-based color choice
         var randomColorMode = false
         val hsvRed = WHITE.toHSVa().copy(s = 1.0)
         val noiseFac = 0.01
 
         // Multi Position per KeyEvent
+        // Critical feature for making this fun !
+
+        // Cyclical flag, element of multiPosBlocks.indices = [0 to n-1]
+        // Just holds an integer representation of the multi position trigger mode,
+        // short multiMode.
+        var multiMode = 0
+
         // Press "+" in application -> Cycles through the modes below.
         val multiPosBlocks = mutableListOf<((i: Int, j: Int) -> IntPairList)>(
             { i, j ->
@@ -78,23 +94,20 @@ fun main() = application {
             }
         )
 
-        // Cyclical flag, element of multiPosBlocks.indices = [0 to n-1]
-        var multiMode = 0
-
-        fun getMultiPos(pos: List<Int>?): IntPairList {
-            if (pos == null) return listOf()
-
-            val i = pos[0]
-            val j = pos[1]
-
+        // Turns grid coords ([i], [j]) into a list of IntPairs.
+        // The entries are based on the current [multiMode].
+        fun getMultiPos(i: Int, j: Int): IntPairList {
             return multiPosBlocks[multiMode].invoke(i, j)
         }
 
-        fun onMultiPos(keyName: String, block: (pos: IntPair) -> Unit) {
-            val pos = getTupleIndex(keyName, keyMap)
-            val multiPos = getMultiPos(pos)
+        // Define a block to be executed on the respective positions
+        // yielded from getMultiPos.
+        fun onMultiPos(keyName: String, block: (i: Int, j: Int) -> Unit) {
+            val pos = getTupleIndex(keyName, keyMap) ?: return
+
+            val multiPos = getMultiPos(pos[0], pos[1])
             multiPos.forEach { pos ->
-                block(pos)
+                block(pos.first, pos.second)
             }
         }
 
@@ -116,10 +129,7 @@ fun main() = application {
                 // Effect "Attack"
                 // On hit, set light to 100%.
                 else -> {
-                    onMultiPos(it.name) { pos ->
-                        val i = pos.first
-                        val j = pos.second
-
+                    onMultiPos(it.name) { i, j ->
                         toggleMap[i][j] = 1.0
                     }
                 }
@@ -128,10 +138,7 @@ fun main() = application {
 
         // // KeyUp events
         keyboard.keyUp.listen {
-            onMultiPos(it.name) { pos ->
-                val i = pos.first
-                val j = pos.second
-
+            onMultiPos(it.name) { i, j ->
                 toggleMap[i][j] = min(toggleMap[i][j], 0.1)
             }
         }
@@ -159,4 +166,3 @@ fun main() = application {
 // Type aliases for better readability.
 typealias IntPair = Pair<Int, Int>
 typealias IntPairList = List<IntPair>
-
