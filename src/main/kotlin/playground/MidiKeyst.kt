@@ -91,11 +91,19 @@ fun main() = application {
                         Pair(i_, j_)
                     }
                 }.flatten()
+            },
+            { i, j ->
+                // Select all even shifts in both directions
+                List(rows) { it }.filter { (it+i)%2==0 }.map {i_ ->
+                    List(cols) { it }.filter { (it+j)%2==0 }.map { j_ ->
+                        Pair(i_, j_)
+                    }
+                }.flatten()
             }
         )
 
-        // Turns grid coords ([i], [j]) into a list of IntPairs.
-        // The entries are based on the current [multiMode].
+        // Turns grid coords (i, j) into a list of IntPairs.
+        // The entries are based on the current multiMode.
         fun getMultiPos(i: Int, j: Int): IntPairList {
             return multiPosBlocks[multiMode].invoke(i, j)
         }
