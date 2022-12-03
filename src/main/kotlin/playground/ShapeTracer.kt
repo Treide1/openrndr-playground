@@ -1,5 +1,6 @@
 package playground
 
+import org.openrndr.Fullscreen
 import org.openrndr.KEY_ESCAPE
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
@@ -8,9 +9,9 @@ import org.openrndr.math.Vector2
 import utils.map
 
 fun main() = application {
-    configure {
+    configure {}
 
-    }
+    // Program running
     program {
 
         val layerCount = 4
