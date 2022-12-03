@@ -23,7 +23,7 @@ import kotlin.math.PI
 import kotlin.math.sin
 
 /**
- * Introduce and modulate four envelopes,
+ * Introduce four envelopes,
  * that are individually captured by mouse movement.
  *
  * Every track is displayed as a left-moving line.
@@ -67,7 +67,12 @@ fun main() = application {
 
             val size = tL.size
             val xFirst = xL.first()
-            val sod = SecondOrderDynamics(1.0, 3.0, 0.0, xFirst)
+            val sod = SecondOrderDynamics(
+                1.0,
+                0.6,
+                0.0,
+                xFirst
+            )
 
             return BeatEnvelope(bpm, 4).buildBySegments {
                 segment(0.0, tL.first(),xFirst, sod.update(tL.first(), xL[0]))
