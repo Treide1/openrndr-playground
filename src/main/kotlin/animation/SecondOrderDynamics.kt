@@ -76,7 +76,7 @@ class SecondOrderDynamics(f: Double, z: Double, r:Double, x0: Double) {
         calculateKs()
     }
 
-    fun calculateKs() {
+    private fun calculateKs() {
         if (f == 0.0) println("Division by f=$f, not caught at calc site.")
 
         k1 = z / (PI * f)
