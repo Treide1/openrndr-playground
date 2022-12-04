@@ -8,7 +8,7 @@ import org.openrndr.math.Vector2
 import utils.map
 
 /**
- * ShapeTracer application.
+ * LayerBasedTracer application.
  *
  * Draws a rect at your mouse position.
  * Draws a fading tracer away from the center.
