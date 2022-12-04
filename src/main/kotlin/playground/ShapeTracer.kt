@@ -50,9 +50,9 @@ fun main() = application {
             // Start with the most-offset, least-alpha rect.
             // End with the least-offset, most-alpha rect.
             rtList.forEachIndexed { i, rt ->
-                val relI = i.map(0, 3, 1.0, 0.25)
+                val relI = i.map(0, 3, .25, 1.0)
 
-                val fadeFac =  2.0
+                val fadeFac = 2.0
                 val dtc = center-mouse.position // diff to center
 
                 val offsetRelI = relI - layerOff
@@ -79,8 +79,6 @@ fun main() = application {
     }
 }
 
-
-
 /**
  * Single-responsibility renderTarget factory method.
  * Adds a colorBuffer as min-requirement for drawing.
@@ -101,12 +99,12 @@ private infix operator fun Double.times(b: Boolean): Double {
 /**
  * Encapsulates drawing a rect on a RenderTarget, with some config
  */
-private fun Drawer.drawRectOnRt(rt: RenderTarget, pos: Vector2 = Vector2.ZERO, opacity: Double = 1.0, withClear: Boolean = true) {
+private fun Drawer.drawRectOnRt(rt: RenderTarget, pos: Vector2 = Vector2.ZERO, brightness: Double = 1.0, withClear: Boolean = true) {
     this.isolatedWithTarget(rt) {
         if (withClear) clear(ColorRGBa.TRANSPARENT)
 
-        stroke = ColorRGBa.WHITE.opacify(opacity)
-        fill = ColorRGBa.PINK.shade(.9).opacify(opacity)
+        stroke = ColorRGBa.WHITE.shade(brightness)
+        fill = ColorRGBa.PINK.shade(.9).shade(brightness)
         rectangle(-40.0+pos.x, -40.0+pos.y, 80.0, 80.0)
     }
 }
