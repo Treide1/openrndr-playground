@@ -74,9 +74,17 @@ fun main() = application {
             "2" to 20.0,
             "3" to 30.0
         )
-        fun targetRadius(): Double  = targetRadiusMap[targetStyle]!!
+        var targetRadius = 0.0
 
-        var currentRadius = targetRadius()
+        fun updateStyle(style: String) {
+            if (style in targetRadiusMap.keys) {
+                targetStyle = style
+                targetRadius = targetRadiusMap[targetStyle]!!
+            }
+        }
+        updateStyle(targetStyle)
+
+        var currentRadius = targetRadius
 
         // Modes Setup
         var isPaused = false
@@ -92,6 +100,7 @@ fun main() = application {
         var phase = 0.0 // phase shift from 0.0 to 1.0
         val phaseInc = 0.125
 
+        // Return mouse pos or calculate lissajous curve pos
         fun getPos() : Vector2 {
             return if (!isCurveMode) mouse.position else {
                 val relT = tLj / ljInterval
@@ -106,15 +115,16 @@ fun main() = application {
             }
         }
 
-        // Program Extension: Main
+        // Program Extension: Main.
+        // Update values, add shapes if needed. Then draw shapes.
         extend {
 
             // Update, unless isPaused=true
             if (!isPaused) {
 
                 // Update style, track current to target
-                val radDist = targetRadius() - currentRadius
-                currentRadius = if (abs(radDist) > 1.0) currentRadius + radDist * .05 else targetRadius()
+                val radDist = targetRadius - currentRadius
+                currentRadius = if (abs(radDist) > 1.0) currentRadius + radDist * .05 else targetRadius
 
                 // Update lissajous curve
                 tLj = (tLj + deltaTime*1000) // % ljInterval
@@ -150,7 +160,8 @@ fun main() = application {
             }
         }
 
-        // Program Extension: Text Display
+        // Program Extension: Text Display.
+        // Display some helpful text about current data and available key binds.
         extend {
             val x = 20.0
             var y = 20.0
@@ -169,14 +180,14 @@ fun main() = application {
                     text(line, x, y)
                 }
             }
-            y += 30.0
+            y += 30.0 // Add empty line between
             val keyLines = ("KEY_ESCAPE -> Exit application\n" +
                     "KEY_SPACEBAR -> Reset time").split(linebreak) + (
-                    "\"p\" -> Toggle isPaused \n" +
-                    "\"1\", \"2\", \"3\" -> Set targetStyle\n" +
+                    "\"p\" -> Toggle isPaused (paused or unpaused)\n" +
+                    "\"1\", \"2\", \"3\" -> Set targetStyle (adjust radius)\n" +
                     "\"a\" -> a++\n" +
                     "\"b\" -> b++\n" +
-                    "\"c\" -> Toggle isCurveMode\n" +
+                    "\"c\" -> Toggle isCurveMode (mouse or curve)\n" +
                     "\"+\" -> Increment phase\n" +
                     "\"-\" -> Decrement phase").split(linebreak)
             drawer.isolated {
@@ -187,9 +198,7 @@ fun main() = application {
             }
         }
 
-        // Minimal key binds:
-        // ESC  - Close Application
-        // p    - Pause/Unpause layer movement
+        // Program: Key binds
         keyboard.keyDown.listen {
             when (it.key) {
                 KEY_ESCAPE -> application.exit()
@@ -197,7 +206,7 @@ fun main() = application {
             }
             when (it.name) {
                 "p" -> isPaused = !isPaused
-                "1", "2", "3" -> targetStyle = it.name
+                "1", "2", "3" -> updateStyle(it.name)
                 "a" -> a++
                 "b" -> b++
                 "c" -> isCurveMode = !isCurveMode
