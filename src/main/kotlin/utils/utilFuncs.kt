@@ -8,9 +8,7 @@ import org.openrndr.draw.Drawer
 import org.openrndr.draw.isolated
 import org.openrndr.math.map
 import org.openrndr.shape.Rectangle
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.pow
+import kotlin.math.*
 
 /**
  * Given a 2-dimensional list [list2D] and a String item [item],
@@ -155,7 +153,7 @@ fun Drawer.showCoordinateSystem(scl: Double) {
  * sqrt(x), but as extension function. Allows chain calls.
  */
 fun Double.sqrt(): Double {
-    return if (this < 0.0 ) Double.NaN else kotlin.math.sqrt(this)
+    return if (this < 0.0 ) Double.NaN else sqrt(this)
 }
 
 
@@ -187,6 +185,50 @@ fun Program.vw(p: Double): Double = this.width * p
 /** Height measured in Viewport height percentage of this program. Returns absolute pixel height.*/
 fun Program.vh(p: Double): Double = this.height * p
 
+/**
+ * Same as Double-only map, but treats all Int as Double.
+ * Just a QOL function to type less.
+ */
 fun Int.map(beforeLeft: Int, beforeRight: Int, afterLeft: Double, afterRight: Double) : Double {
     return this.toDouble().map(beforeLeft.toDouble(), beforeRight.toDouble(), afterLeft, afterRight)
+}
+
+/**
+ * Given this Double, return all copies that identical to this given the mod value within start to end range.
+ *
+ * @receiver Double value the modular copies are calculated of
+ * @param start Range start. Boundary included.
+ * @param end Range end. Boundary included.
+ * @param mod Value of which [this] is taken the modulo of
+ * @return All the values v such that: v = this (mod [mod]) and v in [start, end]. In case of start > end, list is reversed.
+ */
+fun Double.modularCopies(start: Double, end: Double, mod: Double): List<Double> {
+
+    // Guard the case of mod being 0 or less. Exceptions are evil, just return empty list.
+    if (mod <= 0) return listOf()
+
+    // Calculate the result from low to high.
+    // In case of swap, reverse the list at the end
+    val low = min(start, end)
+    val high = max(start, end)
+    val isSwapped = (low == end) // If low == end, then start >= end. Thus, swap at the end yields correct list.
+
+    // Calculate the factor lowFac s.t.
+    // (this + mod*lowFac) = first value,
+    // (this + mod*highFac) = last value
+    val distToLow = this - low
+    val lowFac = -(distToLow / mod).toInt() // Calc: How often does mod fit into distToLow ? Then, negate.
+
+    val distToHigh = high - this
+    val highFac = (distToHigh / mod).toInt() // Calc: How often does mod fit into distToLow ? Already positive.
+
+    // For each factor from lowFac to highFac, calculate the value
+    // Note: The value this does not need to be in range.
+    // But if it is in range with fac=0, it is unchanged ! (No floating point error for +0.0)
+    val result = (lowFac..highFac).map { fac ->
+        this + mod * fac
+    }
+
+    // Return the result, swapped or unswapped depending on (start, end).
+    return if (!isSwapped) result else result.reversed()
 }
