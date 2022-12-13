@@ -232,3 +232,13 @@ fun Double.modularCopies(start: Double, end: Double, mod: Double): List<Double> 
     // Return the result, swapped or unswapped depending on (start, end).
     return if (!isSwapped) result else result.reversed()
 }
+
+fun Drawer.displayLinesOfText(linesOfText: List<String>, firstX: Double, firstY: Double, margin: Double = 25.0) {
+    val x = firstX
+    var y = firstY+margin
+
+    linesOfText.forEach { line ->
+        this.text(line, x, y)
+        y += margin
+    }
+}
