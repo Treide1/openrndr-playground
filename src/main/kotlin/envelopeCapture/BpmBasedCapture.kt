@@ -1,4 +1,4 @@
-package envelope_capture
+package envelopeCapture
 
 import bpm.BeatEnvelope
 import bpm.BeatEnvelopeBuilder.Companion.buildBySegments
