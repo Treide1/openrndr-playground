@@ -1,4 +1,4 @@
-package envelope_capture
+package envelopeCapture
 
 import animation.SecondOrderDynamics
 import org.openrndr.Fullscreen

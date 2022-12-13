@@ -1,4 +1,4 @@
-package envelope_capture
+package envelopeCapture
 
 import org.openrndr.Extension
 import org.openrndr.Mouse
