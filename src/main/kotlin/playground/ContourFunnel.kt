@@ -34,30 +34,42 @@ fun main() = application {
 
         fun getJoinStyle() : SegmentJoin = joinStyleArray[joinStyleIndex]
 
+        val fixedPos1 = Vector2(500.0, 200.0) // felt like a good control point with angle = -20.0
+        val fixedPos2 = Vector2(1400.0, 750.0) // angle = -15.0
+
+        val pos = fixedPos2
+
+        val start = Vector2(vw(0.0), vh(.45)) // left-center-point
+        val end = Vector2(vw(1.0), vh(0.0))
+        val rightLower = Vector2(vw(1.0), vh(.5))
+        val leftLower = Vector2(vh(0.0), vh(.5))
+        val flippedStart = start.copy(y = height - start.y)
+        val flippedEnd = end.copy(y = height - end.y)
+
+        var isOnlyUpperMode = false
+
+        val cUpper = contour {
+            moveTo(start)
+            arcTo(pos.x, pos.y, angle, largeArcFlag = false, sweepFlag = false, end)
+            lineTo(rightLower)
+            lineTo(leftLower)
+            lineTo(start)
+            close()
+        }
+
+        val cFull = contour {
+            moveTo(start)
+            arcTo(pos.x, pos.y, angle, largeArcFlag = false, sweepFlag = false, end)
+            lineTo(flippedEnd)
+            arcTo(pos.x, pos.y, -angle, largeArcFlag = false, sweepFlag = false, flippedStart)
+            close()
+        }
+
         // Draw upper funnel part
         extend {
 
             if (offsetContinueMode) offsetAmount += offInc
-
-            val mousePos = mouse.position
-            val fixedPos1 = Vector2(500.0, 200.0) // felt like a good control point with angle = -20.0
-            val fixedPos2 = Vector2(1400.0, 750.0) // angle = -15.0
-
-            val pos = fixedPos2
-
-            val start = Vector2(vw(0.0), vh(.45)) // left-center-point
-            val end = Vector2(vw(1.0), vh(0.0))
-            val flippedStart = start.copy(y = height - start.y)
-            val flippedEnd = end.copy(y = height - end.y)
-
-            val c = contour {
-                moveTo(start)
-                arcTo(pos.x, pos.y, angle, largeArcFlag = false, sweepFlag = false, end)
-                lineTo(flippedEnd)
-                arcTo(pos.x, pos.y, -angle, largeArcFlag = false, sweepFlag = false, flippedStart)
-                lineTo(start)
-                close()
-            }
+            val c = if (isOnlyUpperMode) cUpper else cFull
 
             drawer.isolated {
 
@@ -88,13 +100,15 @@ fun main() = application {
                 "SPACEBAR   - Toggle offset mode on/off",
                 "ESCAPE     - Close application.",
                 "s          - Cycle to next JoinStyle",
+                "u          - Toggle isUpperMode on/off",
                 "",
                 "Values:",
                 "Control point  - (${pos.x.toInt()}, ${pos.y.toInt()})",
                 "Angle          - $angle",
                 "Offset amount  - $offsetAmount",
                 "Offset Mode    - $offsetContinueMode",
-                "JoinStyle      - ${getJoinStyle()}"
+                "JoinStyle      - ${getJoinStyle()}",
+                "isUpperMode    - $isOnlyUpperMode"
             )
             drawer.displayLinesOfText(text, 20.0, 20.0)
 
@@ -119,6 +133,7 @@ fun main() = application {
                 "s" -> {
                     joinStyleIndex = (joinStyleIndex+1)%joinStyleArray.size
                 }
+                "u" -> isOnlyUpperMode = !isOnlyUpperMode
             }
         }
     }
