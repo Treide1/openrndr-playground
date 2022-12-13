@@ -92,12 +92,11 @@ fun main() = application {
 
             val text = listOf(
                 "Controls:",
-                "Mouse pos  - Used as control point",
                 "+          - Angle += $angleInc",
                 "-          - Angle -= $angleInc",
                 "i          - +1 offset lines",
                 "k          - -1 offset lines",
-                "SPACEBAR   - Toggle offset mode on/off",
+                "SPACE_BAR   - Toggle offset mode on/off",
                 "ESCAPE     - Close application.",
                 "s          - Cycle to next JoinStyle",
                 "u          - Toggle isUpperMode on/off",
