@@ -10,7 +10,7 @@ fun CatmullRomSegment.toHermiteSegment(): HermiteSegment {
     val p0 = this.p1
     val p1 = this.p2
     val v0 = (this.p2-this.p0).times(alpha)
-    val v1 = (this.p2-this.p0).times(alpha)
+    val v1 = (this.p3-this.p1).times(alpha)
 
     return HermiteSegment(p0, v0, p1, v1)
 }
