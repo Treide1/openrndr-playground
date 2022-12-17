@@ -22,6 +22,7 @@ fun main() = application {
     }
     program {
 
+        // App Setup
         var angle = -15.0
         val angleInc = 2.5
 
@@ -48,6 +49,7 @@ fun main() = application {
 
         var isOnlyUpperMode = false
 
+        // Define contours
         val cUpper = contour {
             moveTo(start)
             arcTo(pos.x, pos.y, angle, largeArcFlag = false, sweepFlag = false, end)
@@ -65,9 +67,10 @@ fun main() = application {
             close()
         }
 
-        // Draw upper funnel part
+        // App Extension: MAIN
         extend {
 
+            // Draw Funnel
             if (offsetContinueMode) offsetAmount += offInc
             val c = if (isOnlyUpperMode) cUpper else cFull
 
@@ -90,6 +93,7 @@ fun main() = application {
 
             }
 
+            // Draw Text
             val text = listOf(
                 "Controls:",
                 "+          - Angle += $angleInc",
@@ -100,6 +104,7 @@ fun main() = application {
                 "ESCAPE     - Close application.",
                 "s          - Cycle to next JoinStyle",
                 "u          - Toggle isUpperMode on/off",
+                "0          - Set offset lines to 0",
                 "",
                 "Values:",
                 "Control point  - (${pos.x.toInt()}, ${pos.y.toInt()})",
@@ -133,6 +138,7 @@ fun main() = application {
                     joinStyleIndex = (joinStyleIndex+1)%joinStyleArray.size
                 }
                 "u" -> isOnlyUpperMode = !isOnlyUpperMode
+                "0" -> offsetAmount = 0
             }
         }
     }
