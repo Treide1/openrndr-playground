@@ -1,10 +1,8 @@
 package playground.controllableShapes.catmullRom
 
 import org.openrndr.math.Vector2
-import org.openrndr.shape.ContourBuilder
 import org.openrndr.shape.Shape
 import org.openrndr.shape.shape
-import playground.controllableShapes.catmullRom.CatmullRomBuilder.Companion.EndpointStrategy
 import playground.controllableShapes.catmullRom.CatmullRomBuilder.Companion.EndpointStrategy.*
 import utils.lerp
 
@@ -27,15 +25,21 @@ class CatmullRomWedge(var tip: Vector2, var angleFrom: Double, var angleTo: Doub
 
     private val relPointList = mutableListOf<Vector2>()
 
-    private fun interpolationList(start: Vector2, end: Vector2): List<Vector2> {
-            val diff = end - start
-            val normal = diff.rotate(-90.0)
-            relPointList.add(0, Vector2(0.0, 0.0))
-            relPointList.add(Vector2(1.0, 0.0))
-            return relPointList.map { p ->
-                start + diff * p.x + normal * p.y
-            }
+    private fun interpolationList(start: Vector2, end: Vector2, flippedRelPoints: Boolean = false): List<Vector2> {
+        val diff = end - start
+        val normal = diff.rotate(-90.0)
+
+        var list = relPointList.sandwichAdd(Vector2.ZERO, Vector2.UNIT_X)
+
+        list = list.map { p ->
+            if (flippedRelPoints) Vector2(1.0-p.x, p.y) else p
         }
+        if (flippedRelPoints) list = list.reversed()
+
+        return list.map { (x, y) ->
+            start + diff * x + normal * y
+        }
+    }
 
     private fun createShape() = shape {
         contour {
@@ -46,7 +50,11 @@ class CatmullRomWedge(var tip: Vector2, var angleFrom: Double, var angleTo: Doub
             }
 
             circularArcTo(outerMiddle, outerTo)
-            lineTo(tip)
+
+            catmullRomSpline(WITH_TANGENT, alpha) {
+                interpolationList(outerTo, tip, flippedRelPoints = true).forEach { add(it) }
+            }
+
             close()
         }
     }
@@ -61,15 +69,12 @@ class CatmullRomWedge(var tip: Vector2, var angleFrom: Double, var angleTo: Doub
 
     fun clearRelPoints() { relPointList.clear() }
 
-    private fun ContourBuilder.catmullRomSpline(
-        endpointStrategy: EndpointStrategy, alpha: Double, function: CatmullRomBuilder.() -> Unit)
-    {
-        val cmb = CatmullRomBuilder(cursor, endpointStrategy, alpha)
-        cmb.function()
-        val segList = cmb.buildBezierSegments()
-        segList.forEach { seg ->
-            curveTo(seg.p1, seg.p2, seg.p3)
-        }
-    }
+}
 
+/**
+ * Add an element to each end of [this] list, one to the front and one to the back.
+ * Thus, you make a element-list-element sandwich, returned as list.
+ */
+private fun <T> List<T>.sandwichAdd(front: T, back: T) : List<T> {
+    return listOf(front) + this + back
 }

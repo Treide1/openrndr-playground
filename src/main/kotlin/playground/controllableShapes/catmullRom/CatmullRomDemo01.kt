@@ -1,4 +1,4 @@
-package playground.controllableShapes
+package playground.controllableShapes.catmullRom
 
 import org.openrndr.Fullscreen
 import org.openrndr.KEY_ESCAPE
@@ -6,7 +6,8 @@ import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.LineJoin
 import org.openrndr.draw.isolated
-import playground.controllableShapes.catmullRom.CatmullRomWedge
+import org.openrndr.math.map
+import kotlin.math.sin
 
 fun main() = application {
     configure {
@@ -15,7 +16,7 @@ fun main() = application {
     program {
         val center = application.windowSize.times(.5)
         val a0 = 0.0
-        val a1 = 90.0
+        val a1 = 180.0
         val rad = center.length*.5
 
         var alpha = .5
@@ -26,11 +27,20 @@ fun main() = application {
         extend {
             catmullRomWedge.clearRelPoints()
             val x = mouse.position.x / width
-            val y = (height/2.0 - mouse.position.y) / height
-            catmullRomWedge.addRelativePoint(x, y)
+            val y = mouse.position.y / height
 
+            catmullRomWedge.addRelativePoint(.25, 0.0)
+            catmullRomWedge.addRelativePoint(
+                x.map(0.0, 1.0 ,0.1, 0.9),
+                y.map(0.0, 1.0, 1.0, -1.0)
+            )
+            catmullRomWedge.addRelativePoint(.75, 0.0)
+
+            val off = 10.0 * sin(seconds*.5)
+
+            catmullRomWedge.angleFrom = a0 + off
+            catmullRomWedge.angleTo = a1 - off
             catmullRomWedge.alpha = alpha
-            // catmullRomWedge.angleFrom = a0 + 10.0 * sin(seconds*.5)
         }
 
         extend {

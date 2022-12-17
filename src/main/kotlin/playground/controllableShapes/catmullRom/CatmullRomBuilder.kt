@@ -1,7 +1,10 @@
 package playground.controllableShapes.catmullRom
 
 import org.openrndr.math.Vector2
-import playground.controllableShapes.catmullRom.CatmullRomBuilder.Companion.EndpointStrategy.*
+import org.openrndr.shape.ContourBuilder
+import playground.controllableShapes.catmullRom.CatmullRomBuilder.Companion.EndpointStrategy
+import playground.controllableShapes.catmullRom.CatmullRomBuilder.Companion.EndpointStrategy.WITH_MIRROR
+import playground.controllableShapes.catmullRom.CatmullRomBuilder.Companion.EndpointStrategy.WITH_TANGENT
 
 class CatmullRomBuilder(val start: Vector2, var endpointStrategy: EndpointStrategy, var alpha: Double) {
 
@@ -33,10 +36,10 @@ class CatmullRomBuilder(val start: Vector2, var endpointStrategy: EndpointStrate
                 // Add virtual endpoints in the direction of the total tangent.
                 // Dist to specified endpoints is equal to tangent-component of first and last linear segment.
                 val n = pointList.size
-                val vTotal = (pointList[n-1] - pointList[0]).normalized
+                val vTotal = (pointList[n - 1] - pointList[0]).normalized
 
                 val vFirst = (pointList[1] - pointList[0]) // First linear segment
-                val vLast = (pointList[n-1] - pointList[n-2]) // Last linear segment
+                val vLast = (pointList[n - 1] - pointList[n - 2]) // Last linear segment
                 val lenFirst = vTotal.dot(vFirst)
                 val lenLast = vTotal.dot(vLast)
 
@@ -46,15 +49,16 @@ class CatmullRomBuilder(val start: Vector2, var endpointStrategy: EndpointStrate
                 pointList.add(0, v0)
                 pointList.add(v1)
             }
+
             WITH_MIRROR -> {
                 // Add virtual endpoints as mirror of first and last linear segment
                 val n = pointList.size
 
                 val vFirst = (pointList[1] - pointList[0]) // First linear segment
-                val vLast = (pointList[n-1] - pointList[n-2]) // Last linear segment
+                val vLast = (pointList[n - 1] - pointList[n - 2]) // Last linear segment
 
                 pointList.add(0, pointList.first() - vFirst)
-                pointList.add(pointList.last() - vLast)
+                pointList.add(pointList.last() + vLast)
             }
         }
 
@@ -64,10 +68,10 @@ class CatmullRomBuilder(val start: Vector2, var endpointStrategy: EndpointStrate
 
         val result = mutableListOf<BezierSegment>()
         val n = pointList.size
-        for(i in pointList.indices) {
+        for (i in pointList.indices) {
             // Guard: Iteration over point quadruples. i is always second entry of quadruple.
             // Thus, i can not be first, or last (=n-1), or second to last (=n-2).
-            if (i == 0 || i >= n-2) continue
+            if (i == 0 || i >= n - 2) continue
 
             // Catmull-Rom spline converted down to BezierSegment
             val seg = CatmullRomSegment(pointList[i - 1], pointList[i], pointList[i + 1], pointList[i + 2], alpha)
@@ -86,7 +90,7 @@ class CatmullRomBuilder(val start: Vector2, var endpointStrategy: EndpointStrate
          * The virtual points are not interpolated through, but determine the direction
          * of leaving the first point/entering the last point.
          */
-        enum class EndpointStrategy{
+        enum class EndpointStrategy {
             /**
              * Add a virtual point in the direction of the tangent through the first and last point on each end.
              */
@@ -99,4 +103,24 @@ class CatmullRomBuilder(val start: Vector2, var endpointStrategy: EndpointStrate
             WITH_MIRROR
         }
     }
+}
+
+fun ContourBuilder.catmullRomSpline(
+    endpointStrategy: EndpointStrategy,
+    alpha: Double = 0.5,
+    function: CatmullRomBuilder.() -> Unit,
+)
+{
+    val cmb = CatmullRomBuilder(cursor, endpointStrategy, alpha)
+    cmb.function()
+    val segList = cmb.buildBezierSegments()
+
+    segList.forEach { seg ->
+        curveTo(seg)
+    }
+}
+
+
+fun ContourBuilder.curveTo(segment: BezierSegment) {
+    curveTo(segment.p1, segment.p2, segment.p3)
 }
