@@ -6,7 +6,7 @@ import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.LineJoin
 import org.openrndr.draw.isolated
-import kotlin.math.sin
+import playground.controllableShapes.catmullRom.CatmullRomWedge
 
 fun main() = application {
     configure {
@@ -21,7 +21,6 @@ fun main() = application {
         var alpha = .5
         val alphaInc = .1
 
-        // val wedge = Wedge(center, a0, a1, rad)
         val catmullRomWedge = CatmullRomWedge(center, a0, a1, rad)
 
         extend {
@@ -55,6 +54,4 @@ fun main() = application {
             }
         }
     }
-
-
 }
