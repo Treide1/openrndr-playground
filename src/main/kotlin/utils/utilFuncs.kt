@@ -233,6 +233,12 @@ fun Double.modularCopies(start: Double, end: Double, mod: Double): List<Double> 
     return if (!isSwapped) result else result.reversed()
 }
 
+/**
+ * Let the drawer display lines of text, starting from the upper right corner (firstX, firstY) with
+ * a line break down after each line.
+ *
+ * Line breaks move the in y direction with a total of margin.
+ */
 fun Drawer.displayLinesOfText(linesOfText: List<String>, firstX: Double, firstY: Double, margin: Double = 25.0) {
     val x = firstX
     var y = firstY+margin
@@ -241,4 +247,15 @@ fun Drawer.displayLinesOfText(linesOfText: List<String>, firstX: Double, firstY:
         this.text(line, x, y)
         y += margin
     }
+}
+
+/**
+ * Linear interpolation from A (= [this]) to [B] with percentage [perc].
+ *
+ * @receiver lerpSource
+ * @param B lerpTarget
+ * @param perc percentage to lerp from A to B
+ */
+fun Double.lerp(B: Double, perc: Double): Double {
+    return this*(1-perc) + B*perc
 }

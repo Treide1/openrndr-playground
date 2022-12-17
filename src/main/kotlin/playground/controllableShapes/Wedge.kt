@@ -6,6 +6,7 @@ import org.openrndr.draw.isolated
 import org.openrndr.math.Vector2
 import org.openrndr.shape.Shape
 import org.openrndr.shape.shape
+import utils.lerp
 
 class Wedge(var tip: Vector2, var angleFrom: Double, var angleTo: Double, var radius: Double) {
 
@@ -38,13 +39,4 @@ fun Drawer.wedge(wedge: Wedge) {
         fill = wedge.fillColor
         shape(wedge.shape)
     }
-}
-
-/**
- * @receiver lerpSource
- * @param B lerpTarget
- * @param perc percentage to lerp from A to B
- */
-private fun Double.lerp(B: Double, perc: Double): Double {
-    return this*(1-perc) + B*perc
 }
