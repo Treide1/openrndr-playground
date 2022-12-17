@@ -6,6 +6,7 @@ import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.LineJoin
 import org.openrndr.draw.isolated
+import org.openrndr.draw.shadeStyle
 import org.openrndr.math.map
 import kotlin.math.sin
 
@@ -46,6 +47,15 @@ fun main() = application {
         extend {
             drawer.isolated {
                 stroke = ColorRGBa.WHITE
+                shadeStyle = shadeStyle {
+                    fragmentTransform = """
+                        float c = sin(c_screenPosition.y * 0.005) * 0.5 + 0.5;
+                        float d = cos(c_screenPosition.y * 0.005) * 0.5 + 0.5;
+                        x_fill.rgb *= vec3(c, c, c);
+                        x_stroke.rgb *= vec3(d, d, d);
+                    """.trimMargin()
+                }
+
                 fill = ColorRGBa.PINK
                 strokeWeight = 10.0
                 lineJoin = LineJoin.ROUND
