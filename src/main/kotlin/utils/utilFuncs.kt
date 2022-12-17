@@ -259,3 +259,24 @@ fun Drawer.displayLinesOfText(linesOfText: List<String>, firstX: Double, firstY:
 fun Double.lerp(B: Double, perc: Double): Double {
     return this*(1-perc) + B*perc
 }
+
+/**
+ * WIP: Idea for dynamic recalculation if primary value changes, so that secondary value requires update.
+ * That might trigger a ternary value to update and so on.
+ */
+fun <T> calculation(function: () -> T): Calculation<T> {
+    return Calculation(function)
+}
+
+/**
+ * WIP
+ */
+class Calculation<T>(val function: () -> T) {
+
+    var value = function()
+        private set
+
+    fun update() {
+        value = function()
+    }
+}
