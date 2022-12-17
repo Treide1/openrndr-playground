@@ -1,17 +1,13 @@
+@file:Suppress("unused")
+
 package playground.controllableShapes
 
-import org.openrndr.color.ColorRGBa
-import org.openrndr.draw.Drawer
-import org.openrndr.draw.isolated
 import org.openrndr.math.Vector2
 import org.openrndr.shape.Shape
 import org.openrndr.shape.shape
 import utils.lerp
 
 class Wedge(var tip: Vector2, var angleFrom: Double, var angleTo: Double, var radius: Double) {
-
-    var strokeColor = ColorRGBa.WHITE
-    var fillColor = ColorRGBa.BLUE
 
     val shape: Shape
         get() = createShape()
@@ -33,10 +29,3 @@ class Wedge(var tip: Vector2, var angleFrom: Double, var angleTo: Double, var ra
     }
 }
 
-fun Drawer.wedge(wedge: Wedge) {
-    this.isolated {
-        stroke = wedge.strokeColor
-        fill = wedge.fillColor
-        shape(wedge.shape)
-    }
-}
