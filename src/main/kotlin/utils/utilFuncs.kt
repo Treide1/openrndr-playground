@@ -239,7 +239,7 @@ fun Double.modularCopies(start: Double, end: Double, mod: Double): List<Double> 
  *
  * Line breaks move the in y direction with a total of margin.
  */
-fun Drawer.displayLinesOfText(linesOfText: List<String>, firstX: Double, firstY: Double, margin: Double = 25.0) {
+fun Drawer.displayLinesOfText(linesOfText: List<String>, firstX: Double = 20.0, firstY: Double = 20.0, margin: Double = 25.0) {
     val x = firstX
     var y = firstY+margin
 
