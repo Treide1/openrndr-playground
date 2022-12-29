@@ -6,6 +6,8 @@ import org.openrndr.Program
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.Drawer
 import org.openrndr.draw.isolated
+import org.openrndr.math.Vector2
+import org.openrndr.math.asDegrees
 import org.openrndr.math.map
 import org.openrndr.shape.Rectangle
 import kotlin.math.*
@@ -279,4 +281,11 @@ class Calculation<T>(val function: () -> T) {
     fun update() {
         value = function()
     }
+}
+
+/**
+ * Returns the angle of this [Vector2] in degrees.
+ */
+fun Vector2.getAngle(): Double {
+    return atan2(this.x, this.y).asDegrees
 }
