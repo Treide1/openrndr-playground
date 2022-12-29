@@ -15,16 +15,25 @@ import utils.getAngle
 import utils.map
 import utils.showCoordinateSystem
 
+/**
+ * Showcase for LEDs in 3D space.
+ *
+ * Simple rose of LinearLEDs with cyclic flashing and overall fading.
+ * Move around in 3D space and change between different styles of LEDs.
+ */
 fun main() = application {
     configure {
         fullscreen = Fullscreen.CURRENT_DISPLAY_MODE
         multisample = WindowMultisample.SampleCount(4)
     }
     program {
+        // SETUP
+        // Camera
         val cam = Orbital().apply {
             eye = Vector3.UNIT_Z * 150.0
         }
 
+        // LinearLED init
         val linNum = 8
         val startLen = 30.0
         val endLen = 90.0
@@ -35,22 +44,27 @@ fun main() = application {
             val base = Vector3.fromSpherical(spherical)
             LinearLED(base * startLen, base * endLen, 0.8)
         }
-        var hitIndex = 0
+
+        // LinearLED flash management
+        var flashIndex = 0
         val dampFac = 0.98
 
+        // LinearLED style management
         val ledStyleList = LedStyle.values()
-        var ledStyleIndex = LedStyle.BOX.ordinal
-        fun getLedStyle() = ledStyleList[ledStyleIndex]
+        var ledStyleIndex = 0
+        fun getLedStyle() = ledStyleList[ledStyleIndex] // Low-cost lookup. Clean solution is a mutable.
 
         // MAIN
         extend(cam)
         extend {
+            // Perform flash
             if (frameCount%30==0) {
-                hitIndex++
-                hitIndex %= linNum
-                ledList[hitIndex].brightness = 1.0
+                flashIndex++
+                flashIndex %= linNum
+                ledList[flashIndex].brightness = 1.0
             }
 
+            // Draw with style
             ledList.forEach { line ->
                 when (getLedStyle()) {
                     LedStyle.LINE -> drawer.drawLineLED(line)
@@ -59,11 +73,12 @@ fun main() = application {
                     LedStyle.CYLINDER -> drawer.drawCylinderLED(line)
                 }
 
+                // Apply fade (of flash)
                 line.brightness *= dampFac
             }
         }
 
-        // DEBUG
+        // QOL
         extend {
             drawer.showCoordinateSystem(10.0)
             drawer.translate(-250.0, 150.0, -30.0)
@@ -82,6 +97,7 @@ fun main() = application {
             )
         }
 
+        // KEY BINDS
         keyboard.keyDown.listen {
             when(it.key) {
                 KEY_ESCAPE -> application.exit()
@@ -94,6 +110,9 @@ fun main() = application {
     }
 }
 
+/**
+ * Draw the given [LinearLED] using a 1D LineSegment.
+ */
 fun Drawer.drawLineLED(line: LinearLED) {
     this.isolated {
         stroke = ColorRGBa.PINK.shade(line.brightness)
@@ -101,9 +120,13 @@ fun Drawer.drawLineLED(line: LinearLED) {
     }
 }
 
+/**
+ * Draw the given [LinearLED] using a 2D rectangle.
+ */
 fun Drawer.drawRectLED(line: LinearLED) {
     val rectWidth = 4.0
 
+    // Only works for LinearLEDs in the x-y-plane. Done this way for demo only.
     val start = line.start.xy
     val end = line.end.xy
     val diff = end - start
@@ -117,6 +140,9 @@ fun Drawer.drawRectLED(line: LinearLED) {
     }
 }
 
+/**
+ * Draw the given [LinearLED] using a boxMesh.
+ */
 fun Drawer.drawBoxLED(line: LinearLED) {
     val boxWidth = 4.0
 
@@ -136,6 +162,9 @@ fun Drawer.drawBoxLED(line: LinearLED) {
     }
 }
 
+/**
+ * Draw the given [LinearLED] using a cylinderMesh.
+ */
 fun Drawer.drawCylinderLED(line: LinearLED) {
     val cylWidth = 4.0
 
@@ -144,7 +173,7 @@ fun Drawer.drawCylinderLED(line: LinearLED) {
     val diff = end - start
     val angRot = -diff.xy.getAngle() + 90.0
 
-    val cyl = cylinderMesh(radius=cylWidth, length=diff.length)
+    val cyl = cylinderMesh(radius=cylWidth/2.0, length=diff.length)
 
     this.isolated {
         stroke = null // Unused for meshes
@@ -152,12 +181,20 @@ fun Drawer.drawCylinderLED(line: LinearLED) {
         translate(start*2.0)
         rotate(angRot)
         rotate(Vector3.UNIT_Y, 90.0)
-        vertexBuffer(cyl, DrawPrimitive.TRIANGLES)
+        vertexBuffer(cyl, DrawPrimitive.TRIANGLE_FAN)
     }
 }
 
+/**
+ * Data class representing an LED in a straight line from [start] to [end] in 3D space.
+ * The LED has a certain [brightness] that can be updated.
+ * How to draw an LED is managed by [LedStyle].
+ */
 data class LinearLED(val start: Vector3, val end: Vector3, var brightness: Double = 0.0)
 
+/**
+ * Enumerates draw styles for the abstract [LinearLED].
+ */
 enum class LedStyle {
     LINE,
     RECT,
