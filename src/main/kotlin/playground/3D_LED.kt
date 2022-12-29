@@ -1,15 +1,14 @@
 package playground
 
-import org.openrndr.Fullscreen
-import org.openrndr.KEY_ESCAPE
-import org.openrndr.WindowMultisample
-import org.openrndr.application
+import org.openrndr.*
 import org.openrndr.color.ColorRGBa
+import org.openrndr.draw.Drawer
 import org.openrndr.draw.isolated
 import org.openrndr.extra.camera.Orbital
 import org.openrndr.math.Spherical
 import org.openrndr.math.Vector3
 import utils.displayLinesOfText
+import utils.getAngle
 import utils.map
 import utils.showCoordinateSystem
 
@@ -32,11 +31,14 @@ fun main() = application {
             val phi = i.map(0, linNum, 0.0, 360.0)
             val spherical = Spherical(90.0, phi, 1.0)
             val base = Vector3.fromSpherical(spherical)
-            val brg = i.map(-1, linNum, 0.0, 1.0)
-            LinearLED(base * startLen, base * endLen, brg)
+            LinearLED(base * startLen, base * endLen, 0.8)
         }
         var hitIndex = 0
         val dampFac = 0.98
+
+        val ledStyleList = LedStyle.values()
+        var ledStyleIndex = LedStyle.RECT.ordinal
+        fun getLedStyle() = ledStyleList[ledStyleIndex]
 
         // MAIN
         extend(cam)
@@ -47,17 +49,13 @@ fun main() = application {
                 ledList[hitIndex].brightness = 1.0
             }
 
-            ledList.forEachIndexed { i, line ->
-                drawer.isolated {
-                    stroke = ColorRGBa.PINK
-                    strokeWeight = i * 10.0 + 5.0
-                    fill = ColorRGBa.PINK
-
-                    stroke = stroke!!.shade(line.brightness)
-                    lineSegment(line.start, line.end)
-
-                    line.brightness *= dampFac
+            ledList.forEach { line ->
+                when (getLedStyle()) {
+                    LedStyle.LINE -> drawer.drawLineLED(line)
+                    LedStyle.RECT -> drawer.drawRectLED(line)
                 }
+
+                line.brightness *= dampFac
             }
         }
 
@@ -74,6 +72,7 @@ fun main() = application {
                     "W/S        - Move forwards/backwards",
                     "A/D        - Move left/right",
                     "Q/E        - Move up/down",
+                    "SPACEBAR   - Change draw style (current: ${getLedStyle()})",
                     "ESCAPE     - Close application"
                 )
             )
@@ -82,9 +81,43 @@ fun main() = application {
         keyboard.keyDown.listen {
             when(it.key) {
                 KEY_ESCAPE -> application.exit()
+                KEY_SPACEBAR -> {
+                    ledStyleIndex++
+                    ledStyleIndex %= ledStyleList.size
+                }
             }
         }
     }
 }
 
+fun Drawer.drawLineLED(line: LinearLED) {
+    this.isolated {
+        stroke = ColorRGBa.PINK.shade(line.brightness)
+        lineSegment(line.start, line.end)
+    }
+}
+
+fun Drawer.drawRectLED(line: LinearLED) {
+    val rectWidth = 4.0
+
+    val start = line.start.xy
+    val end = line.end.xy
+    val diff = end - start
+
+    this.isolated {
+        stroke = null
+        fill = ColorRGBa.PINK.shade(line.brightness)
+        translate(start)
+        rotate(-diff.getAngle() + 90.0)
+        rectangle(0.0, -rectWidth/2.0, diff.length, rectWidth)
+    }
+}
+
 data class LinearLED(val start: Vector3, val end: Vector3, var brightness: Double = 0.0)
+
+enum class LedStyle {
+    LINE,
+    RECT,
+    // BOX,
+    // CYLINDER,
+}
