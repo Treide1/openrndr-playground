@@ -7,6 +7,7 @@ import org.openrndr.draw.Drawer
 import org.openrndr.draw.isolated
 import org.openrndr.extra.camera.Orbital
 import org.openrndr.extra.meshgenerators.boxMesh
+import org.openrndr.extra.meshgenerators.cylinderMesh
 import org.openrndr.math.Spherical
 import org.openrndr.math.Vector3
 import utils.displayLinesOfText
@@ -22,7 +23,6 @@ fun main() = application {
     program {
         val cam = Orbital().apply {
             eye = Vector3.UNIT_Z * 150.0
-            camera.depthTest = false
         }
 
         val linNum = 8
@@ -55,7 +55,8 @@ fun main() = application {
                 when (getLedStyle()) {
                     LedStyle.LINE -> drawer.drawLineLED(line)
                     LedStyle.RECT -> drawer.drawRectLED(line)
-                    LedStyle.BOX -> drawer.drawerBoxLED(line)
+                    LedStyle.BOX -> drawer.drawBoxLED(line)
+                    LedStyle.CYLINDER -> drawer.drawCylinderLED(line)
                 }
 
                 line.brightness *= dampFac
@@ -116,7 +117,7 @@ fun Drawer.drawRectLED(line: LinearLED) {
     }
 }
 
-fun Drawer.drawerBoxLED(line: LinearLED) {
+fun Drawer.drawBoxLED(line: LinearLED) {
     val boxWidth = 4.0
 
     val start = line.start
@@ -127,11 +128,31 @@ fun Drawer.drawerBoxLED(line: LinearLED) {
     val box = boxMesh(diff.length, boxWidth, boxWidth)
 
     this.isolated {
-        stroke = ColorRGBa.BLACK
+        stroke = null // Unused for meshes
         fill = ColorRGBa.PINK.shade(line.brightness)
         translate(start*2.0)
         rotate(angRot)
         vertexBuffer(box, DrawPrimitive.TRIANGLES)
+    }
+}
+
+fun Drawer.drawCylinderLED(line: LinearLED) {
+    val cylWidth = 4.0
+
+    val start = line.start
+    val end = line.end
+    val diff = end - start
+    val angRot = -diff.xy.getAngle() + 90.0
+
+    val cyl = cylinderMesh(radius=cylWidth, length=diff.length)
+
+    this.isolated {
+        stroke = null // Unused for meshes
+        fill = ColorRGBa.PINK.shade(line.brightness)
+        translate(start*2.0)
+        rotate(angRot)
+        rotate(Vector3.UNIT_Y, 90.0)
+        vertexBuffer(cyl, DrawPrimitive.TRIANGLES)
     }
 }
 
@@ -141,5 +162,5 @@ enum class LedStyle {
     LINE,
     RECT,
     BOX,
-    // CYLINDER,
+    CYLINDER,
 }
