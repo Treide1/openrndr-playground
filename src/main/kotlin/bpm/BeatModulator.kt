@@ -4,7 +4,7 @@ package bpm
 
 import org.openrndr.animatable.easing.Easing
 
-class BeatModulator(val envelopeCount : Int = 4) : ClockSubscriber {
+class BeatModulator(val envelopeCount : Int = 4, block: BeatModulator.() -> Unit = {}) : ClockSubscriber {
 
 
     init {
@@ -25,6 +25,14 @@ class BeatModulator(val envelopeCount : Int = 4) : ClockSubscriber {
      * Can be subject of transitions, i.e. their value changes over time.
      */
     val weights = Array(envelopeCount) { Weight(0.0) }
+
+    /**
+     * Execute the initialization block.
+     * Position of init block is important ! Namely, after vars.
+     */
+    init {
+        this.block()
+    }
 
     /**
      * Ticks from program are handed to envelopes and weights.

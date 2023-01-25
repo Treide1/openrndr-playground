@@ -51,7 +51,7 @@ class BeatEnvelope(
      * @param phaseOff shift of sampling time in beats
      */
     fun sample(phaseOff: Double = 0.0) : Double {
-        val samplingPhase = (phase + phaseOff) % beatsPerLoop // phase at which we sample
+        val samplingPhase = (phase + phaseOff + beatsPerLoop) % beatsPerLoop // phase at which we sample
         return envelope(samplingPhase)
     }
 
