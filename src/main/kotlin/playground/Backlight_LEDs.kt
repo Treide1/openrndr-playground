@@ -1,14 +1,13 @@
 package playground
 
-import org.openrndr.Fullscreen
-import org.openrndr.KEY_ESCAPE
-import org.openrndr.MouseButton
-import org.openrndr.application
+import org.openrndr.*
 import org.openrndr.color.ColorRGBa
 import org.openrndr.color.ColorRGBa.Companion.PINK
 import org.openrndr.draw.Drawer
 import org.openrndr.draw.shadeStyle
+import org.openrndr.extra.noise.random
 import org.openrndr.math.Vector2
+import org.openrndr.math.map
 import org.openrndr.panel.elements.round
 import org.openrndr.shape.Shape
 import org.openrndr.shape.Triangle
@@ -18,6 +17,11 @@ fun main() = application {
         fullscreen = Fullscreen.CURRENT_DISPLAY_MODE
     }
     program {
+        mouse.cursorVisible = false
+
+        val bpm = 107.0
+        val secPerBeat = 60.0/bpm
+        var phase = 0.0
 
         val colorList = listOf(
             ColorRGBa.fromHex("#dd00ff"),
@@ -38,22 +42,33 @@ fun main() = application {
 
         // DRAW
         extend {
-            ledList.forEach {
-                drawer.drawBacklightLED(it, 1.0)
+            phase += deltaTime
+            while (phase > secPerBeat) {
+                phase -= secPerBeat
+                repeat(4) {
+                    val pos = getRandomScreenPos()
+                    addLED(getTriangleLED(pos, seconds * 20.0, color))
+                }
             }
 
-            val led = getTriangleLED(mouse.position, seconds*20.0, color)
-            drawer.drawBacklightLED(led, .4)
+            ledList.forEachIndexed { i, led ->
+                val fac = i.toDouble().map(1.0-phase/secPerBeat, maxLEDs-1.0, 0.0, 1.0)
+                drawer.drawBacklightLED(led, fac)
+            }
+
+            //val led = getTriangleLED(mouse.position, seconds*20.0, color)
+            //drawer.drawBacklightLED(led, .4)
         }
 
         keyboard.keyDown.listen {
             when (it.key) {
                 KEY_ESCAPE -> application.exit()
+                KEY_SPACEBAR -> phase = 0.0
             }
         }
         mouse.buttonDown.listen {
             when (it.button) {
-                MouseButton.LEFT ->addLED(getTriangleLED(mouse.position, seconds*20.0, color))
+                MouseButton.LEFT -> addLED(getTriangleLED(mouse.position, seconds*20.0, color))
                 else -> return@listen
             }
         }
@@ -68,6 +83,8 @@ fun getTriangleLED(pos: Vector2, rot: Double, color: ColorRGBa = PINK) : Backlig
 }
 
 data class BacklightLED(val shape: Shape, val center: Vector2, val color: ColorRGBa)
+
+fun Program.getRandomScreenPos() : Vector2 = Vector2(random(0.0, width-1.0), random(0.0,height-1.0))
 
 fun Drawer.drawBacklightLED(backlightLED: BacklightLED, opacity: Double = 1.0) {
     val (shape, center, color) = backlightLED
@@ -89,6 +106,6 @@ fun Drawer.drawBacklightLED(backlightLED: BacklightLED, opacity: Double = 1.0) {
     popStyle()
     popTransforms()
 
-    this.fill = color
+    this.fill = color.opacify(opacity)
     this.shape(shape)
 }
