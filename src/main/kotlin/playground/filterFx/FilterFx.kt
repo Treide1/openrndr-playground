@@ -12,7 +12,6 @@ import org.openrndr.extra.compositor.compose
 import org.openrndr.extra.compositor.draw
 import org.openrndr.extra.compositor.layer
 import org.openrndr.math.Vector3
-import org.openrndr.math.transforms.transform
 import org.openrndr.shape.Rectangle
 import org.openrndr.shape.compound
 import utils.displayLinesOfText
@@ -26,8 +25,8 @@ fun main() = application {
     program {
 
         // FILTERS
-        val iMin = -10
-        val iMax = 10
+        val iMin = -8
+        val iMax = 8
         val iRange = (iMin .. iMax)
 
         var filterIndex = 0
@@ -55,24 +54,21 @@ fun main() = application {
                     val innerOff = 5.0
 
                     blend(filter)
-                    draw {
-                        val transform = transform {
-                            rotate(Vector3.UNIT_Z, .1 * seconds * i)
-                        }
-                        val com = compound {
-                            difference {
-                                shape(Rectangle(x,y, rad)
-                                    .shape.transform(transform)
-                                )
-                                shape(Rectangle(x+innerOff,y+innerOff, rad-2*innerOff)
-                                    .shape.transform(transform)
-                                )
-                            }
-                        }
 
+                    val com = compound {
+                        difference {
+                            shape(Rectangle(0.0,0.0, rad).shape)
+                            shape(Rectangle(innerOff,innerOff, rad-2*innerOff).shape)
+                        }
+                    }
+
+                    draw {
                         drawer.isolated {
                             stroke = WHITE
                             fill = PINK.mix(BLUE, mixValue)
+                            rotate(Vector3.UNIT_Z, 0.01 * mouse.position.x * i)
+                            translate(x, y)
+                            rotate(Vector3.UNIT_Z, 0.1 * mouse.position.y * i)
                             shapes(com)
                         }
                      }
