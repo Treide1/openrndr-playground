@@ -11,6 +11,7 @@ import org.openrndr.math.map
 import org.openrndr.panel.elements.round
 import org.openrndr.shape.Shape
 import org.openrndr.shape.Triangle
+import utils.map
 
 fun main() = application {
     configure {
@@ -19,7 +20,7 @@ fun main() = application {
     program {
         mouse.cursorVisible = false
 
-        val bpm = 107.0
+        val bpm = 122.0 // "Daily Routines" by Oliver Schories
         val secPerBeat = 60.0/bpm
         var phase = 0.0
 
@@ -52,7 +53,8 @@ fun main() = application {
             }
 
             ledList.forEachIndexed { i, led ->
-                val fac = i.toDouble().map(1.0-phase/secPerBeat, maxLEDs-1.0, 0.0, 1.0)
+                val relPhase = phase/secPerBeat
+                val fac = i.map(0, maxLEDs-1, 0.0, 1.0) * relPhase.map(0.0,1.0,0.8,0.2)
                 drawer.drawBacklightLED(led, fac)
             }
 
@@ -75,6 +77,11 @@ fun main() = application {
     }
 }
 
+
+fun Program.getRandomScreenPos() : Vector2 = Vector2(random(0.0, width-1.0), random(0.0,height-1.0))
+
+/////////////////////////////////////////////////////////////////////////////////////
+
 fun getTriangleLED(pos: Vector2, rot: Double, color: ColorRGBa = PINK) : BacklightLED {
     val off = Vector2(30.0, 0.0)
     val posList = List(3) { pos + off.rotate(360.0/3*it + rot) }
@@ -82,11 +89,7 @@ fun getTriangleLED(pos: Vector2, rot: Double, color: ColorRGBa = PINK) : Backlig
     return BacklightLED(shape, pos, color)
 }
 
-data class BacklightLED(val shape: Shape, val center: Vector2, val color: ColorRGBa)
-
-fun Program.getRandomScreenPos() : Vector2 = Vector2(random(0.0, width-1.0), random(0.0,height-1.0))
-
-fun Drawer.drawBacklightLED(backlightLED: BacklightLED, opacity: Double = 1.0) {
+fun Drawer.drawBacklightLED(backlightLED: BacklightLED, opacity: Double) {
     val (shape, center, color) = backlightLED
 
     pushStyle()
@@ -109,3 +112,7 @@ fun Drawer.drawBacklightLED(backlightLED: BacklightLED, opacity: Double = 1.0) {
     this.fill = color.opacify(opacity)
     this.shape(shape)
 }
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+data class BacklightLED(val shape: Shape, val center: Vector2, val color: ColorRGBa)
