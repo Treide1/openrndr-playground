@@ -28,7 +28,7 @@ fun main() = application {
             shadow.download()
             for (y in 0 until h) {
                 for (x in 0 until w) {
-                    shadow[x, y] = if (isFlashFrame) ColorRGBa.WHITE
+                    shadow[x, y] = if (isFlashFrame) ColorHSVa(y * 360.0 / h, x.toDouble() / w, 1.0).toRGBa()
                         else shadow[x, y].shade(0.98)
                 }
             }
