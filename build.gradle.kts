@@ -1,12 +1,9 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-group = "org.openrndr.template"
-version = "0.4.0"
-
-val applicationMainClass = "TemplateProgramKt"
+group = "de.treide1.openrndr-playground"
+version = "0.0.1"
 
 /**  ## additional ORX features to be added to this project */
 val orxFeatures = setOf<String>(
@@ -135,40 +132,7 @@ tasks.withType<KotlinCompile> {
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
-project.setProperty("mainClassName", applicationMainClass)
-tasks {
-    named<ShadowJar>("shadowJar") {
-        manifest {
-            attributes["Main-Class"] = applicationMainClass
-        }
-        minimize {
-            exclude(dependency("org.openrndr:openrndr-gl3:.*"))
-            exclude(dependency("org.jetbrains.kotlin:kotlin-reflect:.*"))
-        }
-    }
-    named<org.beryx.runtime.JPackageTask>("jpackage") {
-        doLast {
-            when (OperatingSystem.current()) {
-                OperatingSystem.WINDOWS, OperatingSystem.LINUX -> {
-                    copy {
-                        from("data") {
-                            include("**/*")
-                        }
-                        into("build/jpackage/openrndr-application/data")
-                    }
-                }
-                OperatingSystem.MAC_OS -> {
-                    copy {
-                        from("data") {
-                            include("**/*")
-                        }
-                        into("build/jpackage/openrndr-application.app/data")
-                    }
-                }
-            }
-        }
-    }
-}
+//project.setProperty("mainClassName", "")
 
 // ------------------------------------------------------------------------------------------------------------------ //
 

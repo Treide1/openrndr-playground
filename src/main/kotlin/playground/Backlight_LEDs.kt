@@ -5,12 +5,17 @@ import org.openrndr.color.ColorRGBa
 import org.openrndr.color.ColorRGBa.Companion.PINK
 import org.openrndr.draw.Drawer
 import org.openrndr.draw.shadeStyle
+import org.openrndr.extra.noise.perlin
+import org.openrndr.extra.noise.perlin2D
 import org.openrndr.extra.noise.random
 import org.openrndr.math.Vector2
 import org.openrndr.math.map
 import org.openrndr.panel.elements.round
 import org.openrndr.shape.Shape
 import org.openrndr.shape.Triangle
+import utils.map
+import utils.vh
+import utils.vw
 
 fun main() = application {
     configure {
@@ -19,7 +24,7 @@ fun main() = application {
     program {
         mouse.cursorVisible = false
 
-        val bpm = 107.0
+        val bpm = 122.0 // "Daily Routines" by Oliver Schories
         val secPerBeat = 60.0/bpm
         var phase = 0.0
 
@@ -52,8 +57,9 @@ fun main() = application {
             }
 
             ledList.forEachIndexed { i, led ->
-                val fac = i.toDouble().map(1.0-phase/secPerBeat, maxLEDs-1.0, 0.0, 1.0)
-                drawer.drawBacklightLED(led, fac)
+                val relPhase = phase/secPerBeat
+                val lum = i.map(0, maxLEDs-1, 0.0, 1.0) * relPhase.map(0.0,1.0,0.8,0.2)
+                drawer.drawBacklightLED(led, 0.6, lum)
             }
 
             //val led = getTriangleLED(mouse.position, seconds*20.0, color)
@@ -75,6 +81,20 @@ fun main() = application {
     }
 }
 
+var counter = 0
+fun Program.getRandomScreenPos() : Vector2 {
+    counter++
+    val x = perlin2D(42, counter*0.01, 1.0) * 0.5 + 0.5
+    val vX = x * width
+    val y = perlin2D(43, counter*0.01, 1.0) * 0.5 + 0.5
+    val vY = y * height
+    println("x: $x, y: $y, vX: $vX, vY: $vY")
+    return Vector2(vX, vY)
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+
 fun getTriangleLED(pos: Vector2, rot: Double, color: ColorRGBa = PINK) : BacklightLED {
     val off = Vector2(30.0, 0.0)
     val posList = List(3) { pos + off.rotate(360.0/3*it + rot) }
@@ -82,11 +102,7 @@ fun getTriangleLED(pos: Vector2, rot: Double, color: ColorRGBa = PINK) : Backlig
     return BacklightLED(shape, pos, color)
 }
 
-data class BacklightLED(val shape: Shape, val center: Vector2, val color: ColorRGBa)
-
-fun Program.getRandomScreenPos() : Vector2 = Vector2(random(0.0, width-1.0), random(0.0,height-1.0))
-
-fun Drawer.drawBacklightLED(backlightLED: BacklightLED, opacity: Double = 1.0) {
+fun Drawer.drawBacklightLED(backlightLED: BacklightLED, opacity: Double, luminosity: Double) {
     val (shape, center, color) = backlightLED
 
     pushStyle()
@@ -100,12 +116,17 @@ fun Drawer.drawBacklightLED(backlightLED: BacklightLED, opacity: Double = 1.0) {
             x_fill.rgba *= vec4(1.0/(1.0+length(pos)*0.02)*1.2);
             """.trimIndent()
     }
-    this.fill = color.opacify(opacity)
+    val c = color.toHSVa().copy(v = luminosity, alpha = opacity).toRGBa()
+    this.fill = c
     this.rectangle(0.0, 0.0, width.toDouble(), height.toDouble())
 
     popStyle()
     popTransforms()
 
-    this.fill = color.opacify(opacity)
+    this.fill = c
     this.shape(shape)
 }
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+data class BacklightLED(val shape: Shape, val center: Vector2, val color: ColorRGBa)

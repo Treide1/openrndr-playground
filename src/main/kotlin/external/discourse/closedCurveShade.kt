@@ -43,8 +43,10 @@ fun main() = application {
         val startPoints = mutableListOf<Vector2>()
         for (x in 0 .. nSize){
             for(y in 0 .. nSize){
-                startPoints.add(Vector2(map(0.0, nSize * 1.0, -1.8, 1.8, x * 1.0 ),
-                    map(0.0, nSize * 1.0, -1.8, 1.8, y * 1.0 )))
+                startPoints.add(Vector2(
+                    x.toDouble().map(0.0, nSize * 1.0, -1.8, 1.8 ),
+                    y.toDouble().map(0.0, nSize * 1.0, -1.8, 1.8)
+                ))
             }
         }
 
