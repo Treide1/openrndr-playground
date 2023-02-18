@@ -5,17 +5,13 @@ import org.openrndr.color.ColorRGBa
 import org.openrndr.color.ColorRGBa.Companion.PINK
 import org.openrndr.draw.Drawer
 import org.openrndr.draw.shadeStyle
-import org.openrndr.extra.noise.perlin
 import org.openrndr.extra.noise.perlin2D
-import org.openrndr.extra.noise.random
 import org.openrndr.math.Vector2
 import org.openrndr.math.map
 import org.openrndr.panel.elements.round
 import org.openrndr.shape.Shape
 import org.openrndr.shape.Triangle
 import utils.map
-import utils.vh
-import utils.vw
 
 fun main() = application {
     configure {
@@ -88,7 +84,6 @@ fun Program.getRandomScreenPos() : Vector2 {
     val vX = x * width
     val y = perlin2D(43, counter*0.01, 1.0) * 0.5 + 0.5
     val vY = y * height
-    println("x: $x, y: $y, vX: $vX, vY: $vY")
     return Vector2(vX, vY)
 }
 
