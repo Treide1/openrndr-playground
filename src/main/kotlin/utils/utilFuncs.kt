@@ -289,3 +289,25 @@ class Calculation<T>(val function: () -> T) {
 fun Vector2.getAngle(): Double {
     return atan2(this.x, this.y).asDegrees
 }
+
+/**
+ * Get the vector for the corresponding corner position.
+ * Use the enum [CornerPos] to specify the viewport position of the corner you want.
+ */
+fun Rectangle.cornerAt(cornerPos: CornerPos) : Vector2 {
+    val xOff = if (cornerPos.isLeft) 0.0 else dimensions.x
+    val yOff = if (cornerPos.isUp) 0.0 else dimensions.y
+
+    return corner + Vector2(xOff, yOff)
+}
+
+/**
+ * Enum for calling [Rectangle.cornerAt] with meaningful argument.
+ * Allows for destructuring to use [isLeft] and [isUp] respectively.
+ */
+enum class CornerPos(val isLeft: Boolean, val isUp: Boolean) {
+    UP_LEFT(true, true),
+    UP_RIGHT(false, true),
+    DOWN_LEFT(true, false),
+    DOWN_RIGHT(false, false)
+}

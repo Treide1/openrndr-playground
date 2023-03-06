@@ -12,9 +12,8 @@ import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.LineCap
 import org.openrndr.extra.shapes.grid
-import org.openrndr.math.Vector2
-import org.openrndr.shape.Rectangle
-import playground.CornerPos.*
+import utils.CornerPos.*
+import utils.cornerAt
 import kotlin.math.pow
 
 fun main() = application {
@@ -97,18 +96,4 @@ fun main() = application {
             }
         }
     }
-}
-
-fun Rectangle.cornerAt(cornerPos: CornerPos) : Vector2 {
-    val xOff = if (cornerPos.isLeft) 0.0 else dimensions.x
-    val yOff = if (cornerPos.isUp) 0.0 else dimensions.y
-
-    return corner + Vector2(xOff, yOff)
-}
-
-enum class CornerPos(val isLeft: Boolean, val isUp: Boolean) {
-    UP_LEFT(true, true),
-    UP_RIGHT(false, true),
-    DOWN_LEFT(true, false),
-    DOWN_RIGHT(false, false)
 }
