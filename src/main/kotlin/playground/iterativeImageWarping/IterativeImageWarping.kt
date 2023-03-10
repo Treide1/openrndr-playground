@@ -6,13 +6,32 @@ import org.openrndr.color.ColorHSLa
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.ColorBufferShadow
 import org.openrndr.draw.renderTarget
-import org.openrndr.math.Matrix44
 import org.openrndr.math.Vector2
-import org.openrndr.math.Vector4
-import org.openrndr.math.transforms.transform
+import org.openrndr.shape.Rectangle
+import playground.iterativeImageWarping.CentricScaleRotateWarper.ang
+import playground.iterativeImageWarping.CentricScaleRotateWarper.angOff
+import playground.iterativeImageWarping.CentricScaleRotateWarper.scl
+import playground.iterativeImageWarping.CentricScaleRotateWarper.sclOff
+import playground.iterativeImageWarping.WarpProvider
+import playground.iterativeImageWarping.WobbleWarper
+import utils.CornerPos.*
+import utils.cornerAt
 import utils.displayLinesOfText
 import kotlin.system.measureTimeMillis
 
+// Globals
+val w = 640
+val h = 480
+val size = w*h
+
+val base_delta = Vector2(-100.0, 0.0)
+var delta_fac = 1.0
+val delta_fac_off = 0.1
+var delta_rot = 0.0
+val delta_rot_off = 5.0
+var delta_x = base_delta
+
+var max_iter = 5
 
 /**
  * Refs: https://la.disneyresearch.com/wp-content/uploads/Iterative-Image-Warping-Paper.pdf
@@ -21,7 +40,7 @@ import kotlin.system.measureTimeMillis
  * We keep an accumulative render target, that blends incoming partial results.
  * We generate a new result from a source image with a specified warping.
  *
- * A warping takes a source pixel x_s to a warped location x_w by offset, named V:x_s ->  off.
+ * A warping takes a source pixel x_s to a warped location x_w by offset, named V:x_s -> off.
  * Thus, x_w = x_s + V(x_s) [1]
  *
  * Forward sampling is expensive and leads to discontinuities.
@@ -45,21 +64,6 @@ import kotlin.system.measureTimeMillis
  * l_2 = T/2 - (T^2/4-D)^1/2 .
  * If all eigenvalues yield |l| > 1, interpolate accordingly as no convergence will be reached.
  */
-
-// Globals
-val w = 640
-val h = 480
-val size = w*h
-
-val base_delta = Vector2(-100.0, 0.0)
-var delta_fac = 1.0
-val delta_fac_off = 0.1
-var delta_rot = 0.0
-val delta_rot_off = 5.0
-var delta_x = base_delta
-
-var max_iter = 5
-
 fun main() = application {
 
     // Convenience funcs
@@ -75,29 +79,10 @@ fun main() = application {
         this.height=h
     }
     program {
-        // Warp func
-        var ang = 0.0
-        val angOff = 5.0
-        var scl = 1.0
-        val sclOff = 0.1
-        val center = Vector2(w/2.0, h/2.0)
 
-        fun getV(x_w: Vector2) : (Vector2) -> Vector2 {
-            var M = Matrix44.IDENTITY
-
-            // rotate around center by angle
-            M = M.transform {
-                translate(center)
-                //scale(scl)
-                //rotate(ang)
-                rotate(ang)
-                translate(-center*1.0)
-                //translate(100.0, 100.0)
-            }
-            return { p:Vector2 ->
-                (M * p.xy01).xyEuc - p
-            }
-        }
+        val warpProvider: WarpProvider = WobbleWarper
+        var isShowingGrid = true
+        var isCornerDebugging = false
 
         val rt = renderTarget(w, h) {
             colorBuffer("source")
@@ -113,8 +98,8 @@ fun main() = application {
 
         fun getSourcePixel(x_w: Vector2, onIteration: (Vector2) -> Unit= {}) : Vector2 {
             // Preprocess contraction
-            val warp = getV(x_w)
-            // Pick x_0
+            val warp = warpProvider.getV(x_w, program.seconds, program.deltaTime)
+            // Pick x_0 (warp pixel, but with offset)
             var currentX = x_w + base_delta.rotate(delta_rot)*delta_fac
             // Iterate over contraction
             repeat(max_iter) {
@@ -138,6 +123,9 @@ fun main() = application {
                     val x = i_s % w
                     val y = i_s / w
                     sourceShadow[x, y] = ColorRGBa(x.toDouble() / w, y.toDouble() / h, blue)
+                    if (isShowingGrid) {
+                        if (x % 100 == 99 || y % 100 == 99) sourceShadow[x, y] = ColorRGBa.WHITE
+                    }
                 }
                 sourceShadow.upload()
 
@@ -151,27 +139,30 @@ fun main() = application {
                 // Accumulate
                 accumulatedShadow.forEachIndex { i_a ->
                     val c = warpedShadow[i_a%w, i_a/w]
-                    accumulatedShadow[i_a%w, i_a/w] = c //*0.20 //+ accumulatedShadow[i_a%w, i_a/w] * 0.97
+                    accumulatedShadow[i_a%w, i_a/w] = c // * 0.20 + accumulatedShadow[i_a%w, i_a/w] * 0.97
                 }
 
                 drawer.image(rt.colorBuffer(0), 0.0, 0.0)
                 drawer.image(rt.colorBuffer(2), w.toDouble(), 0.0)
 
-                // Colorful debugging
-                val pointsOfInterest = List(4) { i ->
-                    Vector2(if (i%2==0) 0.0 else w*1.0, if (i/2==0) 0.0 else h*1.0)
-                }
-                pointsOfInterest.forEachIndexed { i, p ->
-                    val baseColor = ColorHSLa(i*90.0, 1.0, 0.8).toRGBa()
-                    drawer.stroke = ColorRGBa.WHITE
-                    var current = p
-                    // On each iteration, draw a line to the next point
-                    getSourcePixel(p) { next ->
-                        drawer.stroke = drawer.stroke!!.mix(baseColor, 0.5)
-                        drawer.lineSegment(current, next)
-                        current = next
-                    }
 
+                if (isCornerDebugging) {// Colorful debugging
+                    val panelRect = Rectangle(0.0, 0.0, w * 1.0, h * 1.0)
+                    val pointsOfInterest = listOf(UP_LEFT, UP_RIGHT, DOWN_RIGHT, DOWN_LEFT)
+                        .map { panelRect.cornerAt(it) }
+
+                    pointsOfInterest.forEachIndexed { i, p ->
+                        val baseColor = ColorHSLa(i * 90.0, 1.0, 0.8).toRGBa()
+                        drawer.stroke = ColorRGBa.WHITE
+                        var current = p
+                        // On each iteration, draw a line to the next point
+                        getSourcePixel(p) { next ->
+                            drawer.stroke = drawer.stroke!!.mix(baseColor, 0.5)
+                            drawer.lineSegment(current, next)
+                            current = next
+                        }
+
+                    }
                 }
             }.also { println("time per frame: $it ms") }
         }
@@ -192,6 +183,9 @@ fun main() = application {
                 "n" -> delta_fac -= delta_fac_off
                 "b" -> delta_rot += delta_rot_off
                 "m" -> delta_rot -= delta_rot_off
+
+                "g" -> isShowingGrid = !isShowingGrid
+                "c" -> isCornerDebugging = !isCornerDebugging
             }
         }
 
@@ -201,7 +195,9 @@ fun main() = application {
                 "scl: $scl (+/- off: $sclOff a,d)",
                 "max_iter: $max_iter (+/-: by 1 with +,-)",
                 "delta_fac: $delta_fac (+/- $delta_fac_off with h,n)",
-                "delta_rot $delta_rot (+/- $delta_rot_off with b,m)"
+                "delta_rot $delta_rot (+/- $delta_rot_off with b,m)",
+                "isShowingGrid: $isShowingGrid (toggle with g)",
+                "isCornerDebugging $isCornerDebugging (toggle with c)"
                 )
             )
         }
@@ -220,6 +216,3 @@ private operator fun ColorBufferShadow.get(v: Vector2) : ColorRGBa {
 private operator fun ColorBufferShadow.set(v: Vector2, color: ColorRGBa) {
     this[v.x.toInt(), v.y.toInt()] = color
 }
-
-private val Vector4.xyEuc: Vector2
-    get() = Vector2(x/w, y/w)
