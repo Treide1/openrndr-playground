@@ -8,7 +8,7 @@ import org.openrndr.extra.integralimage.*
 fun main() = application {
     configure {
         width = 1024
-        height = 1024
+        height = 512
     }
     program {
         val fii = FastIntegralImage()
@@ -39,6 +39,9 @@ fun main() = application {
                 """.trimIndent()
             }
             drawer.image(target)
+            drawer.shadeStyle = null
+            drawer.fill = ColorRGBa.PINK.opacify(0.5)
+            drawer.circle(mouse.position, 128.0)
         }
     }
 }
