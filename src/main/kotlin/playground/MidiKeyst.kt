@@ -94,12 +94,20 @@ fun main() = application {
             },
             { i, j ->
                 // Select all even shifts in both directions
-                List(rows) { it }.filter { (it+i)%2==0 }.map {i_ ->
-                    List(cols) { it }.filter { (it+j)%2==0 }.map { j_ ->
+                List(rows/2) { it*2 + i%2 }.map {i_ ->
+                    List(cols/2) { it*2 +j%2}.map { j_ ->
                         Pair(i_, j_)
                     }
                 }.flatten()
-            }
+            },
+            { i, j ->
+                // Mirror-Add in each quad, then mirror add along axis
+                listOf(i, 3-i).map {i_ ->
+                    listOf(j%4, 3-j%4).map { listOf(it, 4+it) }.flatten().map { j_ ->
+                        Pair(i_, j_)
+                    }
+                }.flatten()
+            },
         )
 
         // Turns grid coords (i, j) into a list of IntPairs.
