@@ -1,5 +1,6 @@
 package playground.keyframer
 
+import org.openrndr.Program
 import org.openrndr.application
 import org.openrndr.extra.filewatcher.watchFile
 import org.openrndr.extra.keyframer.Keyframer
@@ -12,28 +13,18 @@ fun main() = application {
     }
     program {
 
-        class Animation(val filepath: String, var onFileChange: () -> Unit = {}): Keyframer() {
-
+        class Animation: Keyframer() {
             val position by Vector2Channel(arrayOf("x", "y"))
             val radius by DoubleChannel("radius")
             val color by RGBChannel(arrayOf("r","g","b"))
-
-            init {
-                watchFile(File(filepath)) { file ->
-                    println(file.absolutePath)
-                    loadFromJson(file)
-                    onFileChange()
-                }
-            }
         }
 
-        val anim = Animation(ResFiles.BASIC_ANIM.path)
+        val anim = Animation()
         var time = 0.0
 
-        anim.onFileChange = {
+        anim.loadFromWatchedFile(program, ResFiles.BASIC_ANIM.path) {
             time = 0.0
         }
-
 
         extend {
             time += deltaTime
@@ -44,4 +35,9 @@ fun main() = application {
     }
 }
 
-class Watching
+fun Keyframer.loadFromWatchedFile(program: Program, filepath: String, onFileChange: (file: File) -> Unit = {}) {
+    program.watchFile(File(filepath)) { file ->
+        loadFromJson(file)
+        onFileChange(file)
+    }
+}
