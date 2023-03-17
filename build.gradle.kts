@@ -118,7 +118,8 @@ dependencies {
     }
     implementation(kotlin("stdlib-jdk8"))
     testImplementation(libs.junit)
-}
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")}
 
 // ------------------------------------------------------------------------------------------------------------------ //
 
