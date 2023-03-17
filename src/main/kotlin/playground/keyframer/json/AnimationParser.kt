@@ -3,40 +3,114 @@ package playground.keyframer.json
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
+import java.io.File
+import kotlin.reflect.KProperty
 
 
 open class AnimationParser {
 
+    var currentList = mutableListOf<JsonObject>()
+    var currentMap = mutableMapOf<String, JsonElement>()
+
+    val onStep = { currentMap.clear() }
+    val afterStep: () -> Unit = { currentList.add(JsonObject(currentMap.toMap())) }
+
     @OptIn(ExperimentalSerializationApi::class)
-    fun build(block: JsonArrayBuilder.() -> Unit) : String {
-        val array = buildJsonArray {
-            block()
-        }
+    fun build(block: Builder.() -> Unit): String {
+        currentList.clear()
+        val builder = Builder(onStep, afterStep)
+        builder.block()
+
+        val arr = JsonArray(currentList)
 
         val json = Json { prettyPrint = true; prettyPrintIndent = "  " }
-        return json.encodeToString(array)
+        return json.encodeToString(arr)
     }
 
-    fun JsonArrayBuilder.step(time: Double, easing: Easing? = null, block: JsonObjectBuilder.() -> Unit) {
-        this.addJsonObject {
-            put("time", time)
-            put("easing", easing?.value ?: Easing.LINEAR.value)
+    class Builder(val onStep: () -> Unit, val afterStep: () -> Unit) {
+
+        fun step(block: () -> Unit) {
+            onStep()
             block()
+            afterStep()
         }
     }
 
-    infix fun <T> T.via(other: Easing) : JsonObject {
-        return buildJsonObject {
-            put("easing", other.value)
-            when (this@via) {
-                is Number -> put("value", this@via)
-                else -> put("value", this@via.toString())
-            }
+    var lastModifier = null as String?
+    infix fun <T> T.via(other: Easing) : T {
+        lastModifier = other.ref
+        return this
+    }
 
+    val onNumberSet = { propertyName: String, value: Number ->
+        currentMap[propertyName] =
+            lastModifier?.let{ buildJsonObject {
+                put("value", value)
+                put("easing", lastModifier)
+                lastModifier = null
+            } } ?: JsonPrimitive(value)
+    }
+    val onStringSet = { propertyName: String, value: String ->
+        currentMap[propertyName] =
+            lastModifier?.let{ buildJsonObject {
+                put("value", value)
+                put("easing", lastModifier)
+                lastModifier = null
+            } } ?: JsonPrimitive(value)
+    }
+
+    fun <T: Any> serialize(value: T): Memory<T> {
+        return when (value) {
+            is Number -> Memory(value, onNumberSet) as Memory<T>
+            is String -> Memory(value, onStringSet) as Memory<T>
+            is Easing -> Memory(value) { n, v -> onStringSet(n, v.ref) } as Memory<T>
+            else -> throw IllegalArgumentException("Only Number and String are supported !")
         }
     }
 
-    enum class Easing(val value: String) {
+    class Memory<T: Any>(var value: T, val onSet: (propertyName: String, value: T) -> Unit) {
+        operator fun getValue(animationParser: AnimationParser, property: KProperty<*>): T {
+            return value
+        }
+
+        /**
+         * Only use during [step].
+         */
+        operator fun setValue(animationParser: AnimationParser, property: KProperty<*>, value: T) {
+            onSet(property.name, value)
+            this.value = value
+        }
+    }
+
+    var time by serialize(0.0)
+    var easing by serialize(Easing.LINEAR)
+
+    ///////////////////////////////////////////////////////////////////
+
+   fun buildAndWrite(targetFilename: String, block: Builder.() -> Unit)  {
+
+       val output = build(block)
+
+       var currentPath = System.getProperty("user.dir")
+       val pathSegs = listOf("data", "keyframes")
+       pathSegs.forEach {
+           currentPath += File.separator + it
+           val f = File(currentPath)
+           if (f.exists().not()) {
+               f.mkdir()
+           }
+       }
+       currentPath += File.separator + targetFilename
+       val f = File(currentPath)
+       f.createNewFile()
+       f.writeText(output)
+   }
+
+
+    /**
+     * @param ref reference for json data
+     */
+    enum class Easing(val ref: String) {
         LINEAR("linear"),
         BACK_IN("back-in"),
         BACK_OUT("back-out"),
@@ -73,7 +147,7 @@ open class AnimationParser {
         ;
 
         fun getByValue(value: String): Easing? {
-           return Easing.values().find { this.value == value }
+           return Easing.values().find { this.ref == value }
         }
     }
 }
