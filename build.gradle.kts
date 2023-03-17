@@ -8,7 +8,7 @@ version = "0.0.1"
 /**  ## additional ORX features to be added to this project */
 val orxFeatures = setOf<String>(
 //  "orx-boofcv",
-  "orx-camera",
+   "orx-camera",
 //  "orx-chataigne",
     "orx-color",
     "orx-compositor",
@@ -22,7 +22,7 @@ val orxFeatures = setOf<String>(
     "orx-git-archiver",
     "orx-gui",
     "orx-image-fit",
-//  "orx-integral-image",
+    "orx-integral-image",
 //  "orx-interval-tree",
 //  "orx-jumpflood",
 //  "orx-kdtree",
@@ -30,8 +30,8 @@ val orxFeatures = setOf<String>(
 //  "orx-kinect-v1",
 //  "orx-kotlin-parser",
     "orx-mesh-generators",
-  "orx-midi",
-  "orx-minim",
+   "orx-midi",
+   "orx-minim",
 //  "orx-no-clear",
     "orx-noise",
 //  "orx-obj-loader",

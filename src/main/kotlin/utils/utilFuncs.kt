@@ -132,6 +132,18 @@ fun <T> List<T>.circularSublist(from: Int, to: Int): List<T> {
 
 }
 
+fun <T> List<T>.windowedCyclic(size: Int, step: Int = 1): List<List<T>> {
+    return this.windowed(size, step, partialWindows = true).map { window ->
+        val result = window.toMutableList()
+        var diff = size - window.size
+        while (diff > 0) {
+            val len = if (diff < this.size) diff else this.size
+            result += this.subList(0, len)
+            diff -= len
+        }
+        result
+    }
+}
 
 /**
  * Shows a small coordinate system at this drawer's current translation, rotation and scale.
