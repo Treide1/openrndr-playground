@@ -1,4 +1,4 @@
-package external.templates
+package external.templates.midi_minim
 
 import org.openrndr.application
 import org.openrndr.extra.midi.MidiDeviceDescription

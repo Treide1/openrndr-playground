@@ -323,3 +323,22 @@ enum class CornerPos(val isLeft: Boolean, val isUp: Boolean) {
     DOWN_LEFT(true, false),
     DOWN_RIGHT(false, false)
 }
+
+enum class OS {
+    MAC_OS_X,
+    UNKNOWN,
+}
+
+fun getOS(): OS {
+    return when(System.getProperty("os.name")) {
+        "Mac OS X" -> OS.MAC_OS_X
+        else -> OS.UNKNOWN
+    }
+}
+
+/**
+ * Same as ```also { println("$name: $it") }```. Print only on [predicate] true.
+ */
+fun <T: Any> T.alsoLog(name: String, predicate: Boolean = true): T {
+    return this.also { if (predicate) println("$name: $it") }
+}
