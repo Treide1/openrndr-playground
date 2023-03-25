@@ -7,22 +7,30 @@ import ddf.minim.analysis.LanczosWindow
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.extra.minim.minim
+import org.openrndr.math.IntVector2
 import utils.lerp
 import kotlin.math.ln
 
 fun main() {
     application {
         configure {
-            width = 1280
-            height = 720
+            width = 640
+            height = 480
+            position = IntVector2.ZERO
         }
 
         program {
+            // Uses system standard audio input device (usually your mic)
+            // To use application audio output, you have to route via your system.
+            // For Windows, see "Stereo Mix". For MacOS, see "Blackhole".
             val minim = minim()
+            // Audio stream buffering object
             val lineIn = minim.getLineIn(Minim.MONO, 2048, 48000f)
+            // FFT setup with config
             val fft = FFT(lineIn.bufferSize(), lineIn.sampleRate())
             fft.window(LanczosWindow())
 
+            // Drawing (for illustration purposes)
             val n = fft.specSize().div(4)
 
             val w = width * 0.8
