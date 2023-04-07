@@ -20,12 +20,11 @@ fun main() {
         }
 
         program {
-            // Setup minim
-            val minim = minim()
-            // Uses system standard audio input device.
-            // This depends on system settings (usually your mic).
+            // Uses system standard audio input device (usually your mic)
             // To use application audio output, you have to route via your system.
-            // For Windows, see "Stereo Mix". For macOS, see "Blackhole".
+            // For Windows, see "Stereo Mix". For MacOS, see "Blackhole".
+            val minim = minim()
+            // Audio stream buffering object
             val lineIn = minim.getLineIn(Minim.MONO, 2048, 48000f)
             // FFT setup with config
             val fft = FFT(lineIn.bufferSize(), lineIn.sampleRate())
