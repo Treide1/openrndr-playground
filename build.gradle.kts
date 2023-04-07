@@ -102,6 +102,7 @@ dependencies {
 
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlin.logging)
+    implementation("com.github.dragoon000320:tarsosdsp:1.0") // TarsosDSP
 
     when (applicationLogging) {
         Logging.NONE -> {

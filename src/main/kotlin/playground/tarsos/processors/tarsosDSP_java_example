@@ -1,0 +1,41 @@
+// Get an audio stream from the microphone, chop it in blocks
+// of 1024 samples, no overlap (0 samples)
+AudioDispatcher d = AudioDispatcher.fromDefaultMicrophone(1024, 0);
+float sampleRate = 44100;//The sample rate
+//High pass filter, let everything pass above 110Hz
+AudioProcessor highPass = new HighPass(110,sampleRate);
+d.addAudioProcessor(highPass);
+//Pitch detection, print estimated pitches on standard out
+PitchDetectionHandler printPitch = new PitchDetectionHandler() {
+ @Override
+ public void handlePitch(PitchDetectionResult result,
+ AudioEvent event) {
+  System.out.println(result.getPitch());
+ }
+};
+PitchEstimationAlgorithm algo = PitchEstimationAlgorithm.YIN; //use YIN
+AudioProcessor pitchEstimator = new PitchProcessor(algo, sr,1024,printPitch);
+d.addAudioProcessor(pitchEstimator);
+//Add an audio effect (delay)
+d.addAudioProcessor(new DelayEffect(0.5,0.3,sr));
+//Mix some noise with the audio (synthesis)
+d.addAudioProcessor(new NoiseGenerator(0.3));
+//Play the audio on the loudspeakers
+d.addAudioProcessor(new AudioPlayer(
+new AudioFormat(sampleRate, 16, 1, true,true)));
+d.run();//starts the dispatching process
+
+---
+
+/*
+//High pass filter, let everything pass above 110Hz
+val highPass = HighPass(110f, sampleRate)
+d.addAudioProcessor(highPass)
+//Pitch detection, print estimated pitches on standard out
+val printPitch = PitchDetectionHandler { result, event ->
+    println(result.pitch)
+}
+val algo = PitchProcessor.PitchEstimationAlgorithm.YIN
+val pitchEstimator = PitchProcessor(algo, sampleRate, 1024, printPitch)
+d.addAudioProcessor(pitchEstimator)
+ */

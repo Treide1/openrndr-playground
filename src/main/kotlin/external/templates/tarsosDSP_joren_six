@@ -1,0 +1,26 @@
+01: /Get an audio stream from the microphone, chop it in blocks
+02: // of 1024 samples, no overlap (0 samples)
+03: AudioDispatcher d = AudioDispatcher.fromDefaultMicrophone(1024, 0);
+04: float sampleRate = 44100;//The sample rate
+05: //High pass filter, let everything pass above 110Hz
+06: AudioProcessor highPass = new HighPass(110,sampleRate);
+07: d.addAudioProcessor(highPass);
+08: //Pitch detection, print estimated pitches on standard out
+09: PitchDetectionHandler printPitch = new PitchDetectionHandler() {
+10: @Override
+11: public void handlePitch(PitchDetectionResult result,
+12: AudioEvent event) {
+13: System.out.println(result.getPitch());
+14: }
+15: };
+16: PitchEstimationAlgorithm algo = PitchEstimationAlgorithm.YIN; //use YIN
+17: AudioProcessor pitchEstimator = new PitchProcessor(algo, sr,1024,printPitch);
+18: d.addAudioProcessor(pitchEstimator);
+19: //Add an audio effect (delay)
+20: d.addAudioProcessor(new DelayEffect(0.5,0.3,sr));
+21: //Mix some noise with the audio (synthesis)
+22: d.addAudioProcessor(new NoiseGenerator(0.3));
+23: //Play the audio on the loudspeakers
+24: d.addAudioProcessor(new AudioPlayer(
+25: new AudioFormat(sampleRate, 16, 1, true,true)));
+26: d.run();//starts the dispatching process
