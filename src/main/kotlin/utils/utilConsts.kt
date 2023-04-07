@@ -6,3 +6,4 @@ import kotlin.math.PI
 
 const val PHI = 1.618033988749894
 const val TAU = 2*PI
+const val eps = 0.000001

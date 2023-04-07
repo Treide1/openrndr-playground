@@ -10,7 +10,10 @@ import org.openrndr.math.Vector2
 import org.openrndr.math.asDegrees
 import org.openrndr.math.map
 import org.openrndr.shape.Rectangle
+import java.io.File
 import kotlin.math.*
+
+annotation class WIP
 
 /**
  * Given a 2-dimensional list [list2D] and a String item [item],
@@ -152,12 +155,19 @@ fun <T> List<T>.windowedCyclic(size: Int, step: Int = 1): List<List<T>> {
 fun Drawer.showCoordinateSystem(scl: Double) {
 
     val axis = Rectangle(-scl, 0.0, scl*2, 1.0)
-    this.isolated {
+
+    val origin = Vector2.ZERO
+    val unitX = Vector2(1.0, 0.0)
+    val unitY = Vector2(0.0, 1.0)
+
+    isolated {
         stroke = ColorRGBa.RED
-        this.rectangle(axis)
-        this.rotate(90.0)
+        strokeWeight = 10.0
+        lineSegment(origin, unitX)
+
         stroke = ColorRGBa.BLUE
-        this.rectangle(axis)
+        strokeWeight = 10.0
+        lineSegment(origin, unitY)
     }
 
 }
@@ -278,6 +288,7 @@ fun Double.lerp(B: Double, perc: Double): Double {
  * WIP: Idea for dynamic recalculation if primary value changes, so that secondary value requires update.
  * That might trigger a ternary value to update and so on.
  */
+@WIP
 fun <T> calculation(function: () -> T): Calculation<T> {
     return Calculation(function)
 }
@@ -285,6 +296,7 @@ fun <T> calculation(function: () -> T): Calculation<T> {
 /**
  * WIP
  */
+@WIP
 class Calculation<T>(val function: () -> T) {
 
     var value = function()
@@ -339,6 +351,83 @@ fun getOS(): OS {
 /**
  * Same as ```also { println("$name: $it") }```. Print only on [predicate] true.
  */
-fun <T: Any> T.alsoLog(name: String, predicate: Boolean = true): T {
-    return this.also { if (predicate) println("$name: $it") }
+fun <T: Any> T.alsoLog(tag: String, logger: Logger, transform: ((T) -> String)? = null): T {
+    return this.also {
+        if (logger.enabled) {
+            val qualifiedName = (logger.tagTree + tag).joinToString(" ")
+            val value = if(transform!=null) transform(it) else it.toString()
+            println("$qualifiedName: $value")
+        }
+    }
+}
+
+class Logger {
+    val tagTree = mutableListOf<String>()
+    var enabled = true
+
+    fun pushTag(tag: String) {
+        tagTree.add(tag)
+    }
+    fun popTag() {
+        tagTree.removeLastOrNull() ?: println("popLog: tagTree already empty!")
+    }
+
+    fun log(s: String) {
+        if (enabled) println(s)
+    }
+}
+
+/**
+ * WIP
+ */
+@WIP
+private fun Drawer.isolatedInUv(width: Int, height: Int, block: Drawer.() -> Unit) {
+    this.isolated {
+        // Flip y
+        scale(1.0/width, -1.0/height)
+        // Translate by height
+        translate(0.0, -1.0)
+
+        this.block()
+    }
+}
+
+/**
+ * CsvWriter instances can append to csv via [write] or delete the file via [deleteFile].
+ * Create a new [CsvWriter] and write directly or pass it in [alsoWrite].
+ *
+ * All actions are disabled if [enabled] is set to false.
+ */
+class CsvWriter(fileName: String, pathToFile: String) {
+    val f = File("$pathToFile/$fileName")
+
+    var enabled = true
+    var idCounter = 0
+
+    fun write(s: String, endOfLine: Boolean = false) {
+        if (!enabled) return
+
+        if (!f.exists()) {
+            f.createNewFile()
+        }
+        f.appendText(s + if(!endOfLine) ", " else ";\n")
+        if (endOfLine) idCounter++
+    }
+
+    fun deleteFile() {
+        if (f.exists() && enabled) f.delete()
+    }
+}
+
+/**
+ * Chaining write call to put [this] to csv.
+ *
+ * Allows for transforming before writing via [transform].
+ *
+ * Specify [endOfLine] to comma-separate (for false) or semicolon-separate and new-line (for true).
+ */
+fun <T: Any> T.alsoWrite(writer: CsvWriter, endOfLine: Boolean = false, transform: ((T) -> String)? = null): T {
+    val s = if(transform!=null) transform(this) else this.toString()
+    writer.write(s, endOfLine)
+    return this
 }
