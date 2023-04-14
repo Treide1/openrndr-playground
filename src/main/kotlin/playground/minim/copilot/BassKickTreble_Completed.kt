@@ -2,7 +2,7 @@ package playground.minim.copilot
 
 import org.openrndr.application
 
-// Uncomment to see the result.
+// Uncomment to see the result. Doesn't compile as-is, so it's commented out.
 
 /*
 fun main() = application {
