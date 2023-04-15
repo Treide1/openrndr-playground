@@ -53,6 +53,17 @@ fun main() = application {
         // Runtime var
         val activeMirror = CyclicFlag(listOf(mirrorFilter1, mirrorFilter2))
 
+        fun drawMirror(mirror: MirrorFilter) {
+            mirror.apply(drawBuffer, drawBuffer)
+
+            // Draw the mirror's source rect
+            drawer.isolatedWithTarget(rt) {
+                fill = null
+                stroke = ColorRGBa.BLACK
+                rectangle(mirror.sourceRect)
+            }
+        }
+
         extend {
             // Update mouse position to the mirror filter
             activeMirror.value.updateMousePosForSrc(mouse.position)
@@ -67,17 +78,9 @@ fun main() = application {
                 rectangle(0.0, height / 2.0, width.toDouble(), height / 2.0)
             }
 
-            // Draw the rect with black stroke, but no fill
-            drawer.isolatedWithTarget(rt) {
-                fill = null
-                stroke = ColorRGBa.BLACK
-                rectangle(mirrorFilter1.sourceRect)
-                rectangle(mirrorFilter2.sourceRect)
-            }
-
             // Perform the mirror filter
-            mirrorFilter1.apply(drawBuffer, drawBuffer)
-            mirrorFilter2.apply(drawBuffer, drawBuffer)
+            drawMirror(mirrorFilter1)
+            drawMirror(mirrorFilter2)
 
             // Draw the render targets color buffer to the screen
             drawer.image(drawBuffer)
@@ -106,15 +109,17 @@ class MirrorFilter(
     dst: Rectangle,
     val dims: Vector2 = Vector2(640.0, 480.0)
 ) : Filter(
-    filterShaderFromCode(resourceText("/mirrorFromOther.glsl"), "mirrorFromOther")
+    filterShaderFromCode(
+        // resourceText("/mirrorFromOther.glsl"), "mirrorFromOther"
+        resourceText("/mirrorFromSelf.glsl"), "mirrorFromSelf"
+    )
 ) {
-    var tex1: ColorBuffer by parameters
+    // var tex1: ColorBuffer by parameters
     var srcRect: Vector4 by parameters
     var dstRect: Vector4 by parameters
-    var margin: Double by parameters
 
     init {
-        tex1 = cb
+        // tex1 = cb
         srcRect = getUvVector4()
         dstRect = Vector4(
             dst.x / dims.x,
@@ -122,7 +127,6 @@ class MirrorFilter(
             (dst.x + dst.width) / dims.x,
             (dst.y + dst.height) / dims.y
         )
-        margin = 0.01
     }
 
     fun getUvVector4(): Vector4 {
