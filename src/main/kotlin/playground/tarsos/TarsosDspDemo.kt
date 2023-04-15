@@ -112,7 +112,7 @@ fun main() = application {
                 // Draw the volume buffer as a rect chart
                 val offset = volumeDetectRect.corner
                 for (i in volumeBuffer.indices) {
-                    val vol = volumeBuffer[i]
+                    val vol = volumeBuffer.getOrNull(i) ?: continue
                     val x = offset.x + i * volWidth
                     val y = offset.y + vol.map(loVol, hiVol, h, 0.0)
                     rectangle(x, y, volWidth, volHeight)
