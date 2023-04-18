@@ -17,8 +17,6 @@ vec2 lerp(vec2 first, vec2 second, float perc) {
     return first * (1.0 - perc) + second * perc;
 }
 
-
-
 // Iterative lookup function
 vec4 iterativeLookup(vec2 uv) {
     uint stencilValue = texture(stencil, uv).x;
@@ -39,7 +37,6 @@ vec4 iterativeLookup(vec2 uv) {
 
     return texture(tex0, uv); // * (i / 100.0);
 }
-
 
 // Main function:
 // For each pixel, perform the iterative lookup
