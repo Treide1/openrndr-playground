@@ -5,10 +5,12 @@ import org.openrndr.KEY_SPACEBAR
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.*
+import org.openrndr.extra.shapes.grid
 import org.openrndr.math.Vector2
 import org.openrndr.math.Vector4
 import org.openrndr.resourceText
 import org.openrndr.shape.Rectangle
+import utils.CyclicFlag
 
 /**
  * Demonstrate a milkdrop style fractal by using a "mirror".
@@ -39,7 +41,7 @@ fun main() = application {
         // Init single mirror filter
         val sourceW = 150.0
         val sourceH = 100.0
-        val fac = 0.9
+        val fac = 0.95
         val dW = sourceW * fac
         val dH = sourceH * fac
         val targetRect = Rectangle(300.0, 200.0, dW, dH)
@@ -76,6 +78,13 @@ fun main() = application {
                 rectangle(0.0, 0.0, width.toDouble(), height / 2.0)
                 fill = blue
                 rectangle(0.0, height / 2.0, width.toDouble(), height / 2.0)
+
+                bounds.grid(5, 5).flatten().forEach { r ->
+                    stroke = ColorRGBa.WHITE
+                    strokeWeight = 0.5
+                    fill = null
+                    rectangle(r)
+                }
             }
 
             // Perform the mirror filter
@@ -101,7 +110,7 @@ fun main() = application {
 
 // Filter class for mirroring a portion of the screen from the last screen frame
 class MirrorFilter(
-    cb: ColorBuffer,
+    cb: ColorBuffer, // Other-mirroring only
     var srcX: Double = 0.0,
     var srcY: Double = 0.0,
     val srcW: Double,
@@ -110,11 +119,13 @@ class MirrorFilter(
     val dims: Vector2 = Vector2(640.0, 480.0)
 ) : Filter(
     filterShaderFromCode(
-        // resourceText("/mirrorFromOther.glsl"), "mirrorFromOther"
+        // Try out mirroring from another buffer, requires another color buffer as input
+        //resourceText("/mirrorFromOther.glsl"), "mirrorFromOther"
+        // Try out self mirroring
         resourceText("/mirrorFromSelf.glsl"), "mirrorFromSelf"
     )
 ) {
-    // var tex1: ColorBuffer by parameters
+    // var tex1: ColorBuffer by parameters // Other-mirroring only
     var srcRect: Vector4 by parameters
     var dstRect: Vector4 by parameters
 
@@ -149,15 +160,3 @@ class MirrorFilter(
     }
 }
 
-class CyclicFlag<T>(val options: List<T>) {
-    var index = 0
-    private var _value = options[index]
-
-    val value: T
-        get() = _value
-
-    fun next() {
-        index = (index + 1) % options.size
-        _value = options[index]
-    }
-}
