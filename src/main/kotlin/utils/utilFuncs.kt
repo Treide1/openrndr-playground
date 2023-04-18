@@ -154,11 +154,9 @@ fun <T> List<T>.windowedCyclic(size: Int, step: Int = 1): List<List<T>> {
  */
 fun Drawer.showCoordinateSystem(scl: Double) {
 
-    val axis = Rectangle(-scl, 0.0, scl*2, 1.0)
-
     val origin = Vector2.ZERO
-    val unitX = Vector2(1.0, 0.0)
-    val unitY = Vector2(0.0, 1.0)
+    val unitX = Vector2(1.0, 0.0) * scl
+    val unitY = Vector2(0.0, 1.0) * scl
 
     isolated {
         stroke = ColorRGBa.RED
@@ -447,4 +445,11 @@ class CyclicFlag<T>(val options: List<T>) {
         index = (index + 1) % options.size
         _value = options[index]
     }
+
 }
+
+
+/**
+ * Convert an integer to a ColorRGBa with [this] as the red channel for UINT8 color buffers.
+ */
+fun Int.toR(): ColorRGBa = ColorRGBa(r = this / 256.0, g = 0.0, b = 0.0)
