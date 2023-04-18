@@ -11,6 +11,7 @@ import org.openrndr.math.map
 import org.openrndr.shape.Circle
 import org.openrndr.shape.Rectangle
 import utils.TAU
+import utils.toR
 import kotlin.math.sin
 
 fun main() = application {
@@ -26,10 +27,11 @@ fun main() = application {
         val rt = renderTarget(width, height) {
             colorBuffer()
         }
+        val drawBuffer = rt.colorBuffer(0)
+
         val stencilTarget = renderTarget(width, height) {
             colorBuffer(format = ColorFormat.R, type = ColorType.UINT8)
         }
-        val drawBuffer = rt.colorBuffer(0)
         val stencilBuffer = stencilTarget.colorBuffer(0)
 
         // Init single mirror filter
@@ -116,8 +118,4 @@ class MirrorStencilFilter(
 
 }
 
-/**
- * Convert an integer to a ColorRGBa with [this] as the red channel for UINT8 color buffers.
- */
-private fun Int.toR(): ColorRGBa = ColorRGBa(r = this / 256.0, g = 0.0, b = 0.0)
 
